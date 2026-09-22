@@ -1,11 +1,28 @@
 /**
- * Nivel o perfil del cliente para estrategia de precios B2B
+ * Roles de usuario del sistema y su mapa con niveles de precio B2B
  */
-export enum NivelCliente {
-  CLIENTE_FINAL = 'CLIENTE_FINAL', // Cliente Final - Precio Base de Venta
-  TECNICO = 'TECNICO',             // Técnico / Taller HVAC - Descuento Profesional (~10-15%)
-  DISTRIBUIDOR = 'DISTRIBUIDOR',   // Mayorista / Distribuidor B2B - Precio Especial Mayorista (~20-25%)
+export enum RolUsuario {
+  ADMIN = 'ADMIN',                 // Administrador del sistema (Acceso total)
+  CLIENTE_FINAL = 'CLIENTE_FINAL', // Cliente Final - Precio Base de Venta (0% Descuento)
+  TECNICO = 'TECNICO',             // Técnico / Taller HVAC - Descuento Profesional (10% por defecto)
+  DISTRIBUIDOR = 'DISTRIBUIDOR',   // Mayorista / Distribuidor B2B - Precio Especial Mayorista (20% por defecto)
 }
+
+/**
+ * Alias para mantener compatibilidad con NivelCliente
+ */
+export type NivelCliente = RolUsuario;
+export const NivelCliente = RolUsuario;
+
+/**
+ * Descuentos porcentuales automáticos por defecto por cada nivel de cliente B2B
+ */
+export const DESCUENTOS_POR_DEFECTO_B2B: Record<RolUsuario, number> = {
+  [RolUsuario.ADMIN]: 0,
+  [RolUsuario.CLIENTE_FINAL]: 0,
+  [RolUsuario.TECNICO]: 10,       // 10% de descuento automático
+  [RolUsuario.DISTRIBUIDOR]: 20,  // 20% de descuento automático
+};
 
 /**
  * Gases refrigerantes más comunes en el mercado colombiano de HVAC/R

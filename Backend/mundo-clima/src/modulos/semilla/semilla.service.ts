@@ -1,17 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { Categoria } from '../categorias/entidades/categoria.entity';
 import { Marca } from '../marcas/entidades/marca.entity';
 import { Producto } from '../productos/entidades/producto.entity';
 import { PrecioNivelCliente } from '../productos/entidades/precio-nivel-cliente.entity';
+import { Usuario } from '../usuarios/entidades/usuario.entity';
 import {
   NivelCliente,
+  RolUsuario,
   TipoEquipoHvac,
   RefrigeranteHvac,
   VoltajeHvac,
 } from '../../comun/enums/hvac.enums';
 
+/**
+ * Servicio encargado de poblar la base de datos con información inicial de prueba para desarrollo
+ */
 @Injectable()
 export class SemillaService {
   private readonly registrador = new Logger(SemillaService.name);
@@ -25,6 +31,8 @@ export class SemillaService {
     private readonly repositorioProducto: Repository<Producto>,
     @InjectRepository(PrecioNivelCliente)
     private readonly repositorioPrecioNivel: Repository<PrecioNivelCliente>,
+    @InjectRepository(Usuario)
+    private readonly repositorioUsuario: Repository<Usuario>,
   ) {}
 
   async ejecutarSemilla(): Promise<{ mensaje: string; conteos: any }> {
@@ -35,8 +43,60 @@ export class SemillaService {
     await this.repositorioProducto.createQueryBuilder().delete().execute();
     await this.repositorioMarca.createQueryBuilder().delete().execute();
     await this.repositorioCategoria.createQueryBuilder().delete().execute();
+    await this.repositorioUsuario.createQueryBuilder().delete().execute();
 
-    // 1. Insertar Marcas
+    // 1. Insertar Usuarios de Prueba (ADMIN, TECNICO, DISTRIBUIDOR, CLIENTE_FINAL)
+    const passwordGenericaHash = await bcrypt.hash('MundoClima2026*', 10);
+    const passwordAdminHash = await bcrypt.hash('Admin123*', 10);
+
+    const usuariosSemilla = [
+      {
+        nombre_completo: 'Administrador General',
+        email: 'admin@mundoclima.com',
+        password: passwordAdminHash,
+        rol: RolUsuario.ADMIN,
+        telefono: '+57 300 123 4567',
+        documento_identidad: '900123456-1',
+        nombre_empresa: 'Mundo Clima S.A.S.',
+        esta_activo: true,
+      },
+      {
+        nombre_completo: 'Carlos Pérez (Técnico HVAC)',
+        email: 'tecnico@mundoclima.com',
+        password: passwordGenericaHash,
+        rol: RolUsuario.TECNICO,
+        telefono: '+57 315 987 6543',
+        documento_identidad: '1020304050',
+        nombre_empresa: 'Servicios HVAC del Norte S.A.S.',
+        esta_activo: true,
+      },
+      {
+        nombre_completo: 'María Rodríguez (Mayorista B2B)',
+        email: 'distribuidor@mundoclima.com',
+        password: passwordGenericaHash,
+        rol: RolUsuario.DISTRIBUIDOR,
+        telefono: '+57 310 555 1234',
+        documento_identidad: '800555444-2',
+        nombre_empresa: 'Distribuidora ClimaPlus Colombia Ltda.',
+        esta_activo: true,
+      },
+      {
+        nombre_completo: 'Juan Gómez (Comprador Final)',
+        email: 'cliente@mundoclima.com',
+        password: passwordGenericaHash,
+        rol: RolUsuario.CLIENTE_FINAL,
+        telefono: '+57 320 444 8899',
+        documento_identidad: '80123456',
+        nombre_empresa: undefined,
+        esta_activo: true,
+      },
+    ];
+
+    const usuariosGuardados = await this.repositorioUsuario.save(
+      usuariosSemilla.map((u) => this.repositorioUsuario.create(u)),
+    );
+
+    // 2. Insertar Marcas
     const datosMarcas = [
       { nombre: 'Copeland', slug: 'copeland', logo_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=200' },
       { nombre: 'Danfoss', slug: 'danfoss', logo_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=200' },
@@ -52,22 +112,22 @@ export class SemillaService {
     );
     const mapaMarcas = new Map(marcasGuardadas.map((m) => [m.slug, m]));
 
-    // 2. Insertar Categorías
+    // 3. Insertar Categorías
     const datosCategorias = [
       { nombre: 'Aires Acondicionados', slug: 'aires-acondicionados', descripcion: 'Equipos completos de aire acondicionado residencial y comercial' },
       { nombre: 'Compresores', slug: 'compresores', descripcion: 'Compresores herméticos y scroll para refrigeración y clima' },
-      { nombre: 'Gases Refrigerantes', slug: 'gases-refrigerantes', description: 'Refrigerantes R410A, R22, R32, R134a y más' },
-      { nombre: 'Componentes Eléctricos', slug: 'componentes-electricos', description: 'Capacitores, contactores, relés y tarjetas electrónicas' },
-      { nombre: 'Válvulas y Controles', slug: 'valvulas-y-controles', description: 'Válvulas de expansión, solenoides y termostatos' },
-      { nombre: 'Tubería y Aislamiento', slug: 'tuberia-y-aislamiento', description: 'Tubería de cobre, aislante térmico y racores' },
-      { nombre: 'Herramientas de Refrigeración', slug: 'herramientas', description: 'Manifolds, bombas de vacío y abocinadores' },
+      { nombre: 'Gases Refrigerantes', slug: 'gases-refrigerantes', descripcion: 'Refrigerantes R410A, R22, R32, R134a y más' },
+      { nombre: 'Componentes Eléctricos', slug: 'componentes-electricos', descripcion: 'Capacitores, contactores, relés y tarjetas electrónicas' },
+      { nombre: 'Válvulas y Controles', slug: 'valvulas-y-controles', descripcion: 'Válvulas de expansión, solenoides y termostatos' },
+      { nombre: 'Tubería y Aislamiento', slug: 'tuberia-y-aislamiento', descripcion: 'Tubería de cobre, aislante térmico y racores' },
+      { nombre: 'Herramientas de Refrigeración', slug: 'herramientas', descripcion: 'Manifolds, bombas de vacío y abocinadores' },
     ];
     const categoriasGuardadas = await this.repositorioCategoria.save(
       datosCategorias.map((c) => this.repositorioCategoria.create(c)),
     );
     const mapaCategorias = new Map(categoriasGuardadas.map((c) => [c.slug, c]));
 
-    // 3. Insertar Productos con especificaciones HVAC/R y precios B2B por perfil
+    // 4. Insertar Productos con especificaciones HVAC/R y precios B2B por perfil
     const datosProductos = [
       {
         sku: 'COMP-COP-36K-220V',
@@ -379,8 +439,9 @@ export class SemillaService {
     this.registrador.log('¡Semilla completada exitosamente!');
 
     return {
-      mensaje: 'Base de datos poblada exitosamente con productos HVAC/R de prueba en español',
+      mensaje: 'Base de datos poblada exitosamente con productos y usuarios HVAC/R en español',
       conteos: {
+        usuarios: usuariosGuardados.length,
         categorias: categoriasGuardadas.length,
         marcas: marcasGuardadas.length,
         productos: conteoProductosSembrados,

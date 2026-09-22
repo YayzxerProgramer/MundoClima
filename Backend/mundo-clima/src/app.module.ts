@@ -8,7 +8,12 @@ import { CategoriasModule } from './modulos/categorias/categorias.module';
 import { MarcasModule } from './modulos/marcas/marcas.module';
 import { ProductosModule } from './modulos/productos/productos.module';
 import { SemillaModule } from './modulos/semilla/semilla.module';
+import { UsuariosModule } from './modulos/usuarios/usuarios.module';
+import { AuthModule } from './modulos/auth/auth.module';
 
+/**
+ * Módulo principal de la aplicación NestJS para Mundo Clima
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,6 +26,8 @@ import { SemillaModule } from './modulos/semilla/semilla.module';
     MarcasModule,
     ProductosModule,
     SemillaModule,
+    UsuariosModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
