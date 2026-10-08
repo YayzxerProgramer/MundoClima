@@ -6,19 +6,20 @@ async function bootstrap() {
   const registrador = new Logger('Inicio');
   const app = await NestFactory.create(AppModule);
 
-  // Habilitar CORS para integración con el frontend en React
+  // Habilitar CORS restringido para integración con el frontend en React
   app.enableCors({
-    origin: true,
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
   });
 
   // Prefijo global para la API REST
   app.setGlobalPrefix('api');
 
-  // Tuberia de Validación global para transformación de DTOs
+  // Tubería de Validación global para transformación de DTOs y rechazo de propiedades no autorizadas
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),

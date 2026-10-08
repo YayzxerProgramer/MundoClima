@@ -4,6 +4,9 @@ import { Marca } from '../modulos/marcas/entidades/marca.entity';
 import { Producto } from '../modulos/productos/entidades/producto.entity';
 import { PrecioNivelCliente } from '../modulos/productos/entidades/precio-nivel-cliente.entity';
 import { Usuario } from '../modulos/usuarios/entidades/usuario.entity';
+import { Orden } from '../modulos/ordenes/entidades/orden.entity';
+import { ItemOrden } from '../modulos/ordenes/entidades/item-orden.entity';
+import { VisitaTienda } from '../modulos/estadisticas/entidades/visita-tienda.entity';
 
 /**
  * Configuración exclusiva para base de datos PostgreSQL en Mundo Clima.
@@ -16,7 +19,16 @@ export const obtenerConfiguracionTypeOrm = (): TypeOrmModuleOptions => {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    entities: [Categoria, Marca, Producto, PrecioNivelCliente, Usuario],
+    entities: [
+      Categoria,
+      Marca,
+      Producto,
+      PrecioNivelCliente,
+      Usuario,
+      Orden,
+      ItemOrden,
+      VisitaTienda,
+    ],
     synchronize: true,
     logging: process.env.NODE_ENV !== 'production', 
   };

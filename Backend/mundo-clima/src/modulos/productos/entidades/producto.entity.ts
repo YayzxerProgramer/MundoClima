@@ -52,6 +52,9 @@ export class Producto {
   @Column({ type: 'varchar', length: 50, default: 'Unidad' })
   unidad_medida: string;
 
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 1.0 })
+  peso_kg: number;
+
   @Column({ type: 'boolean', default: true })
   esta_activo: boolean;
 

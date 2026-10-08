@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegistroDto } from './dto/registro.dto';
 import { LoginDto } from './dto/login.dto';
@@ -22,16 +23,18 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /**
-   * Registro público de nuevos usuarios
+   * Registro público de nuevos usuarios (máximo 5 intentos por minuto)
    */
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('registro')
   registro(@Body() registroDto: RegistroDto) {
     return this.authService.registro(registroDto);
   }
 
   /**
-   * Inicio de sesión de usuarios registrados
+   * Inicio de sesión de usuarios registrados (máximo 5 intentos por minuto)
    */
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@Body() loginDto: LoginDto) {

@@ -59,3 +59,24 @@ export enum TipoEquipoHvac {
   CENTRAL_PAQUETE = 'Central / Paquete',
   VRF = 'VRF / VRV',
 }
+
+/**
+ * Estados posibles de una orden de compra
+ */
+export enum EstadoOrden {
+  PENDIENTE_PAGO = 'PENDIENTE_PAGO',
+  PAGADO = 'PAGADO',
+  CONFIRMADO_CONTRAENTREGA = 'CONFIRMADO_CONTRAENTREGA',
+  EN_CAMINO = 'EN_CAMINO',
+  ENTREGADO = 'ENTREGADO',
+  CANCELADO = 'CANCELADO',
+}
+
+/**
+ * Métodos de pago soportados
+ */
+export enum MetodoPago {
+  WOMPI = 'WOMPI',
+  CONTRAENTREGA = 'CONTRAENTREGA',
+}
+
