@@ -1,0 +1,250 @@
+@layer components {
+  .skip-link {
+    @apply fixed left-4 top-4 z-50 -translate-y-24 rounded-control bg-primary px-5 py-3 text-sm font-semibold text-white focus:translate-y-0;
+  }
+  #main-content {
+    @apply min-h-96;
+  }
+  .catalog-layout {
+    @apply grid gap-8 lg:grid-cols-[220px_1fr];
+  }
+  .catalog-toolbar {
+    @apply mb-5 flex flex-wrap items-center justify-between gap-3 border-b pb-5;
+  }
+  .catalog-filters .checkbox-label > span {
+    @apply flex-1;
+  }
+  .filter-options {
+    @apply grid gap-1;
+  }
+  .filter-options label {
+    @apply text-xs;
+  }
+  .filter-chips {
+    @apply mb-5 flex flex-wrap items-center gap-2;
+  }
+  .filter-chips button {
+    @apply inline-flex min-h-8 items-center gap-2 rounded-full border bg-surface px-3 py-1.5 text-xs;
+  }
+  .pdp-layout {
+    @apply grid items-start gap-8 lg:grid-cols-2 lg:gap-12;
+  }
+  .pdp-image {
+    @apply relative overflow-hidden rounded-card border bg-white;
+  }
+  .pdp-image > img {
+    @apply aspect-square w-full object-contain p-8;
+  }
+  .pdp-thumbnails {
+    @apply mt-4 flex flex-wrap gap-3;
+  }
+  .pdp-thumbnails button {
+    @apply h-20 w-20 overflow-hidden rounded-control border bg-white;
+  }
+  .pdp-thumbnails button[aria-pressed="true"] {
+    @apply border-primary ring-1 ring-primary;
+  }
+  .pdp-thumbnails img {
+    @apply h-full w-full object-contain p-2;
+  }
+  .pdp-info h1 {
+    @apply text-2xl leading-snug md:text-3xl;
+  }
+  .product-zoom { @apply max-h-[60dvh] overflow-auto rounded-control border bg-white; }
+  .zoom-image { width: 200%; max-width: none; height: auto; }
+  .specification-list {
+    @apply grid md:grid-cols-2 md:gap-x-10;
+  }
+  .specification-list > div {
+    @apply flex justify-between gap-5 border-b py-3;
+  }
+  .specification-list dt {
+    @apply text-muted;
+  }
+  .specification-list dd {
+    @apply text-right font-medium tabular-nums;
+  }
+  .auth-layout {
+    @apply mx-auto grid max-w-5xl overflow-hidden rounded-card border bg-surface lg:grid-cols-[.85fr_1.15fr];
+  }
+  .auth-brand-panel {
+    @apply hidden flex-col items-start justify-center bg-primary p-10 text-white lg:flex;
+  }
+  .auth-brand-panel > img {
+    @apply mb-12 w-48;
+  }
+  .auth-brand-panel h2 {
+    @apply text-3xl leading-snug;
+  }
+  .auth-brand-panel p {
+    @apply mb-8 mt-5 text-sm leading-7 text-white/75;
+  }
+  .auth-brand-panel span {
+    @apply flex items-center gap-2 text-xs text-white/75;
+  }
+  .auth-form-panel {
+    @apply p-6 md:p-10;
+  }
+  .auth-form-panel h1 {
+    @apply text-3xl;
+  }
+  .cart-layout {
+    @apply grid gap-8 lg:grid-cols-[1fr_340px];
+  }
+  .cart-lines {
+    @apply grid content-start gap-4;
+  }
+  .cart-line {
+    @apply flex items-start gap-4 rounded-control border bg-surface p-4 md:p-5;
+  }
+  .cart-line > a {
+    @apply shrink-0;
+  }
+  .cart-line > a > img {
+    @apply h-20 w-20 rounded-control bg-white object-contain md:h-28 md:w-28;
+  }
+  .cart-line h3 {
+    @apply mb-3 text-sm leading-6;
+  }
+  .cart-line .price-row strong {
+    @apply text-base;
+  }
+  .cart-summary {
+    @apply h-fit rounded-card border bg-surface p-6;
+  }
+  .cart-summary h2 {
+    @apply text-lg;
+  }
+  .cart-compact .cart-summary {
+    @apply mt-5 border-0 bg-canvas p-4;
+  }
+  .cart-compact .cart-line {
+    @apply gap-3 border-0 border-b p-0 pb-5;
+  }
+  .cart-compact .cart-line > a > img {
+    @apply h-16 w-16;
+  }
+  .cart-compact .cart-line h3 {
+    @apply text-xs leading-5;
+  }
+  .checkout-layout {
+    @apply grid items-start gap-7 lg:grid-cols-[1fr_340px];
+  }
+  .checkout-steps {
+    @apply mb-5 flex gap-6 text-xs font-semibold text-muted;
+  }
+  .checkout-steps .active {
+    @apply text-primary;
+  }
+  .payment-option {
+    @apply flex cursor-pointer items-center gap-4 rounded-control border p-4;
+  }
+  .payment-option:has(input:checked) {
+    @apply border-primary bg-primary/5;
+  }
+  .payment-option input {
+    @apply accent-primary;
+  }
+  .payment-option > svg {
+    @apply shrink-0 text-primary;
+  }
+  .payment-option strong {
+    @apply block text-sm;
+  }
+  .payment-option small {
+    @apply mt-1 block text-xs text-muted;
+  }
+  .result-card {
+    @apply mx-auto max-w-2xl p-6 text-center md:p-10;
+  }
+  .result-card h1 {
+    @apply text-2xl md:text-3xl;
+  }
+  .result-icon {
+    @apply mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success;
+  }
+  .result-pending {
+    @apply bg-primary/10 text-primary;
+  }
+  .result-error {
+    @apply bg-danger/10 text-danger;
+  }
+  .profile-details {
+    @apply grid gap-5;
+  }
+  .profile-details dt {
+    @apply mb-1 text-xs text-muted;
+  }
+  .profile-details dd {
+    @apply break-words text-sm font-medium;
+  }
+  .account-card {
+    @apply flex items-center gap-4 rounded-card border bg-surface p-6 hover:border-primary;
+  }
+  .account-card > svg {
+    @apply shrink-0 text-primary;
+  }
+  .account-card > svg:last-child {
+    @apply ml-auto;
+  }
+  .account-card h2 {
+    @apply text-lg;
+  }
+  .account-card p {
+    @apply mt-2 text-xs text-muted;
+  }
+  .order-card {
+    @apply flex flex-wrap items-center gap-5 p-5;
+  }
+  .tracking-timeline {
+    @apply mt-7 grid;
+  }
+  .tracking-timeline li {
+    @apply relative flex gap-4 border-l pb-7 pl-5;
+  }
+  .tracking-timeline li > span {
+    @apply absolute -left-1.5 top-1 h-3 w-3 rounded-full bg-primary;
+  }
+  .tracking-timeline strong {
+    @apply text-sm font-medium;
+  }
+  .tracking-timeline p {
+    @apply mt-2 text-xs text-muted;
+  }
+  .admin-layout {
+    @apply grid gap-8 py-8 lg:grid-cols-[180px_1fr];
+  }
+  .admin-nav nav {
+    @apply flex gap-2 overflow-x-auto lg:grid;
+  }
+  .admin-nav a {
+    @apply flex shrink-0 items-center gap-3 rounded-control px-3 py-3 text-xs text-muted;
+  }
+  .admin-nav a.active {
+    @apply bg-primary/10 font-semibold text-primary;
+  }
+  .admin-layout .page-heading h1 {
+    @apply text-3xl;
+  }
+  .metric-grid {
+    @apply grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
+  .metric {
+    @apply p-5;
+  }
+  .metric > div {
+    @apply mb-4 flex justify-between gap-2 text-xs text-muted;
+  }
+  .metric > div > svg {
+    @apply shrink-0 text-primary;
+  }
+  .metric > strong {
+    @apply block text-xl font-bold tabular-nums;
+  }
+  .metric small {
+    @apply mt-2 block text-[10px] text-muted;
+  }
+  .sales-chart {
+    @apply w-full;
+  }
+}

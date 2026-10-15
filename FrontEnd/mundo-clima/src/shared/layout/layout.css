@@ -1,0 +1,339 @@
+@layer components {
+  .topbar {
+    @apply bg-primary py-2.5 text-white;
+  }
+  .dark .topbar {
+    @apply bg-surface text-ink;
+  }
+  .topbar > div {
+    @apply flex items-center justify-between gap-4 text-[11px];
+  }
+  .topbar > div > div {
+    @apply flex items-center gap-7;
+  }
+  .topbar a {
+    @apply inline-flex items-center gap-2;
+  }
+  .site-header {
+    @apply sticky top-0 z-30 border-b bg-surface;
+  }
+  .header-main {
+    @apply flex flex-wrap items-center gap-3 py-4 md:gap-6 lg:flex-nowrap lg:py-5;
+  }
+  .brand-lockup {
+    @apply flex shrink-0 items-center gap-2;
+  }
+  .brand-lockup img:first-child {
+    @apply h-11 w-11 md:h-12 md:w-12;
+  }
+  .brand-lockup img:last-child {
+    @apply w-32 md:w-40;
+  }
+  .dark .brand-lockup {
+    @apply rounded-control bg-white p-1;
+  }
+  .header-search {
+    @apply order-last w-full lg:order-none lg:flex-1;
+  }
+  .header-actions {
+    @apply ml-auto flex shrink-0 items-center gap-3 md:gap-5;
+  }
+  .account-link {
+    @apply flex items-center gap-2;
+  }
+  .account-link span {
+    @apply hidden md:grid;
+  }
+  .account-link small {
+    @apply text-[10px] text-muted;
+  }
+  .account-link strong {
+    @apply mt-0.5 text-xs font-semibold;
+  }
+  .theme-toggle {
+    @apply hidden h-10 w-8 items-center justify-center text-muted xl:flex;
+  }
+  .cart-trigger {
+    @apply relative flex h-11 items-center gap-3 text-xs font-semibold;
+  }
+  .cart-count {
+    @apply absolute -left-1 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-buy px-1 text-[9px] text-white;
+  }
+  .search-box {
+    @apply relative;
+  }
+  .search-box form {
+    @apply flex items-center gap-3 rounded-control border bg-canvas px-4;
+  }
+  .search-box form > svg {
+    @apply shrink-0 text-muted;
+  }
+  .search-box input {
+    @apply min-w-0 flex-1 bg-transparent py-3.5 text-xs placeholder:text-muted;
+  }
+  .search-box form button {
+    @apply flex h-9 w-7 items-center justify-center text-primary;
+  }
+  .search-results {
+    @apply absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-control border bg-surface shadow-float;
+  }
+  .search-results li a {
+    @apply flex items-center gap-3 p-3 text-xs hover:bg-canvas;
+  }
+  .search-results li img {
+    @apply h-12 w-12 rounded bg-white object-contain;
+  }
+  .search-results li strong {
+    @apply mt-1 block text-primary;
+  }
+  .header-nav {
+    @apply relative hidden border-t lg:block;
+  }
+  .nav-inner {
+    @apply flex items-center gap-6;
+  }
+  .category-trigger {
+    @apply flex items-center gap-2 border-r py-4 pr-5 text-xs font-semibold;
+  }
+  .nav-inner nav {
+    @apply flex flex-1 items-center gap-6 text-xs;
+  }
+  .nav-inner nav a {
+    @apply hover:text-primary;
+  }
+  .professional-link {
+    @apply ml-auto flex items-center gap-2 whitespace-nowrap text-xs font-semibold text-primary;
+  }
+  .mega-menu {
+    @apply absolute inset-x-0 top-full z-40 pt-1;
+  }
+  .mega-shell {
+    @apply flex overflow-hidden rounded-b-card border bg-surface shadow-float;
+  }
+  .mega-categories {
+    @apply w-64 shrink-0 border-r bg-canvas py-3;
+  }
+  .mega-categories a {
+    @apply flex items-center gap-3 px-4 py-3.5 text-xs;
+  }
+  .mega-categories a span {
+    @apply flex-1;
+  }
+  .mega-categories .is-active {
+    @apply bg-surface font-semibold text-primary;
+  }
+  .mega-preview {
+    @apply flex-1 p-7;
+  }
+  .mobile-nav {
+    @apply grid;
+  }
+  .mobile-nav > a {
+    @apply flex items-center justify-between border-b py-4 text-sm font-medium;
+  }
+  .mobile-nav details {
+    @apply border-b py-4;
+  }
+  .mobile-nav summary {
+    @apply flex cursor-pointer list-none items-center gap-3 text-sm font-medium;
+  }
+  .mobile-nav summary svg:last-child {
+    @apply ml-auto;
+  }
+  .mobile-nav details p {
+    @apply py-3 text-sm text-muted;
+  }
+  .mobile-nav details a {
+    @apply flex items-center gap-2 py-2 pl-8 text-sm text-primary;
+  }
+  .home-hero {
+    @apply mt-6 grid overflow-hidden rounded-card bg-primary/5 lg:grid-cols-2;
+  }
+  .hero-copy {
+    @apply relative z-10 p-7 md:p-10 xl:p-12;
+  }
+  .hero-overline {
+    @apply mb-5 inline-flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary;
+  }
+  .hero-copy h1 {
+    @apply text-[2rem] leading-tight tracking-tight text-ink md:text-[2.7rem] xl:text-[3rem];
+  }
+  .hero-copy h1 span {
+    @apply text-primary;
+  }
+  .hero-copy > p {
+    @apply mb-7 mt-5 max-w-sm text-sm leading-7 text-muted;
+  }
+  .hero-copy .btn {
+    @apply px-6;
+  }
+  .hero-note {
+    @apply mt-8 flex items-center gap-3;
+  }
+  .hero-note > span {
+    @apply h-8 w-0.5 bg-aqua;
+  }
+  .hero-note p {
+    @apply text-[11px] leading-5 text-muted;
+  }
+  .hero-note strong {
+    @apply font-medium text-primary;
+  }
+  .hero-image {
+    @apply relative min-h-72 lg:min-h-full;
+  }
+  .hero-image > img {
+    @apply absolute inset-0 h-full w-full object-cover;
+  }
+  .hero-caption {
+    @apply absolute bottom-6 left-6 right-6 flex max-w-sm items-center gap-3 rounded-control border border-white/70 bg-surface/95 p-4 text-ink shadow-card backdrop-blur;
+  }
+  .hero-caption > span {
+    @apply rounded-full bg-primary/10 p-2.5 text-primary;
+  }
+  .hero-caption strong {
+    @apply text-xs;
+  }
+  .hero-caption p {
+    @apply mt-1 text-[10px] text-muted;
+  }
+  .trust-strip {
+    @apply grid grid-cols-2 gap-5 border-b py-7 md:grid-cols-4 md:gap-8;
+  }
+  .trust-strip > div {
+    @apply flex items-center gap-3;
+  }
+  .trust-strip svg {
+    @apply h-6 w-6 shrink-0 text-primary;
+  }
+  .trust-strip strong {
+    @apply block text-[11px] font-semibold;
+  }
+  .trust-strip small {
+    @apply mt-1 block text-[10px] leading-4 text-muted;
+  }
+  .category-grid {
+    @apply grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7;
+  }
+  .category-tile {
+    @apply relative flex flex-col items-center rounded-card border bg-surface px-3 py-6 text-center transition-colors hover:border-aqua hover:bg-primary/5;
+  }
+  .category-tile > span {
+    @apply mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary;
+  }
+  .category-tile h3 {
+    @apply max-w-28 text-xs font-medium leading-5;
+  }
+  .category-tile > svg {
+    @apply absolute right-3 top-3 text-muted/50;
+  }
+  .audience-grid {
+    @apply grid gap-5 md:grid-cols-2;
+  }
+  .audience-card {
+    @apply relative flex gap-5 overflow-hidden rounded-card p-7 md:p-8;
+  }
+  .audience-home {
+    @apply bg-primary/5;
+  }
+  .audience-pro {
+    @apply bg-primary text-white;
+  }
+  .audience-icon {
+    @apply hidden h-12 w-12 shrink-0 items-center justify-center rounded-control bg-surface/70 text-primary lg:flex;
+  }
+  .audience-card > div {
+    @apply relative z-10;
+  }
+  .audience-card .eyebrow {
+    @apply text-[10px];
+  }
+  .audience-pro .eyebrow {
+    @apply text-white/75;
+  }
+  .audience-card h2 {
+    @apply text-xl leading-snug md:text-2xl;
+  }
+  .audience-card h2 + p {
+    @apply mb-5 mt-3 max-w-64 text-xs leading-6 text-muted;
+  }
+  .audience-pro h2 + p {
+    @apply text-white/75;
+  }
+  .audience-card span {
+    @apply inline-flex items-center gap-3 text-xs font-semibold;
+  }
+  .audience-watermark {
+    @apply absolute -bottom-6 -right-6 h-48 w-48 opacity-10;
+  }
+  .professional-banner {
+    @apply relative flex flex-col items-start gap-6 overflow-hidden rounded-card bg-primary px-7 py-9 text-white md:flex-row md:items-center md:px-10;
+  }
+  .professional-art {
+    @apply absolute -bottom-12 -left-12 w-64 opacity-10;
+  }
+  .professional-banner > div:not(.professional-art) {
+    @apply relative;
+  }
+  .professional-banner .eyebrow {
+    @apply text-white/70;
+  }
+  .professional-banner h2 {
+    @apply text-2xl leading-snug;
+  }
+  .professional-banner p:not(.eyebrow) {
+    @apply mt-3 max-w-lg text-xs leading-6 text-white/75;
+  }
+  .professional-cta {
+    @apply flex shrink-0 flex-col items-center gap-4 md:ml-auto;
+  }
+  .professional-cta > a:last-child {
+    @apply text-xs underline underline-offset-4;
+  }
+  .brands-section {
+    @apply py-12 text-center;
+  }
+  .brands-section p {
+    @apply text-[11px] uppercase tracking-widest text-muted;
+  }
+  .brands-section > div {
+    @apply mt-7 flex flex-wrap items-center justify-center gap-x-10 gap-y-5;
+  }
+  .brands-section a {
+    @apply font-display text-xl font-bold tracking-tight text-muted/80 hover:text-primary;
+  }
+  .site-footer {
+    @apply mt-12 bg-ink text-white;
+  }
+  .dark .site-footer {
+    @apply bg-surface;
+  }
+  .dark .professional-banner, .dark .audience-pro, .dark .auth-brand-panel {
+    @apply bg-surface text-ink;
+  }
+  .dark .skip-link { @apply text-canvas; }
+  .footer-grid {
+    @apply grid gap-10 py-12 md:grid-cols-2 xl:grid-cols-[1.3fr_1fr_1fr_1.2fr];
+  }
+  .footer-brand {
+    @apply flex items-center gap-2;
+  }
+  .footer-brand img:first-child {
+    @apply h-12 w-12;
+  }
+  .footer-brand img:last-child {
+    @apply w-40;
+  }
+  .footer-grid h3 {
+    @apply mb-5 text-sm font-semibold;
+  }
+  .footer-grid > div > a:not(.footer-brand):not(.footer-register) {
+    @apply mb-3 flex items-center gap-2 text-xs text-white/70 hover:text-white;
+  }
+  .footer-register {
+    @apply inline-flex items-center gap-2 text-xs font-semibold;
+  }
+  .footer-bottom {
+    @apply flex flex-wrap items-center justify-between gap-4 border-t border-white/10 py-5 text-[10px] text-white/60;
+  }
+}

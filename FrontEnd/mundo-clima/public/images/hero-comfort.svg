@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Sala luminosa con aire acondicionado mini split, sofá y plantas">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EAF6FB"/>
+      <stop offset="1" stop-color="#D7EEF6"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E9D9C4"/>
+      <stop offset="1" stop-color="#D9C2A5"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9ED6EA"/>
+      <stop offset="1" stop-color="#DDF1F8"/>
+    </linearGradient>
+    <linearGradient id="air" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6ABCD5" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#6ABCD5" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Room -->
+  <rect width="960" height="720" fill="url(#wall)"/>
+  <rect y="540" width="960" height="180" fill="url(#floor)"/>
+  <rect y="534" width="960" height="10" fill="#FFFFFF" opacity=".8"/>
+
+  <!-- Window -->
+  <rect x="96" y="120" width="250" height="300" rx="10" fill="#FFFFFF"/>
+  <rect x="110" y="134" width="222" height="272" rx="4" fill="url(#sky)"/>
+  <path d="M110 330c40-30 80-34 120-14s70 16 102-6v96H110z" fill="#BFE3C9"/>
+  <path d="M110 362c48-22 96-18 140 2 30 14 56 12 82 0v42H110z" fill="#9CCFA9"/>
+  <circle cx="276" cy="190" r="26" fill="#FFF3C4"/>
+  <rect x="218" y="134" width="6" height="272" fill="#FFFFFF"/>
+  <rect x="110" y="266" width="222" height="6" fill="#FFFFFF"/>
+
+  <!-- Mini split -->
+  <g>
+    <rect x="520" y="118" width="330" height="96" rx="20" fill="#FFFFFF"/>
+    <rect x="520" y="118" width="330" height="96" rx="20" fill="none" stroke="#C9DCE6" stroke-width="3"/>
+    <rect x="546" y="182" width="278" height="12" rx="6" fill="#E3EEF3"/>
+    <circle cx="812" cy="148" r="5" fill="#6ABCD5"/>
+    <rect x="740" y="143" width="56" height="10" rx="5" fill="#E3EEF3"/>
+    <path d="M556 214c0 60 40 110 132 140 92-30 132-80 132-140z" fill="url(#air)"/>
+    <g fill="none" stroke="#6ABCD5" stroke-width="5" stroke-linecap="round" opacity=".8">
+      <path d="M600 240c20 14 40 14 60 0s40-14 60 0 40 14 60 0"/>
+      <path d="M620 276c18 12 36 12 54 0s36-12 54 0 36 12 54 0"/>
+      <path d="M644 310c14 10 30 10 44 0s30-10 44 0"/>
+    </g>
+  </g>
+
+  <!-- Frame -->
+  <rect x="404" y="214" width="78" height="100" rx="6" fill="#FFFFFF"/>
+  <rect x="414" y="224" width="58" height="80" rx="3" fill="#0A598A" opacity=".85"/>
+  <path d="M414 284l18-20 14 14 10-10 16 16v20h-58z" fill="#6ABCD5"/>
+
+  <!-- Sofa -->
+  <g>
+    <rect x="430" y="420" width="420" height="96" rx="28" fill="#0A598A"/>
+    <rect x="400" y="440" width="70" height="120" rx="26" fill="#0B4F7A"/>
+    <rect x="810" y="440" width="70" height="120" rx="26" fill="#0B4F7A"/>
+    <rect x="452" y="480" width="376" height="72" rx="20" fill="#126CA3"/>
+    <rect x="478" y="380" width="120" height="86" rx="22" fill="#6ABCD5"/>
+    <rect x="690" y="384" width="112" height="82" rx="22" fill="#F3F8FB"/>
+    <rect x="430" y="556" width="12" height="34" rx="4" fill="#5B4632"/>
+    <rect x="838" y="556" width="12" height="34" rx="4" fill="#5B4632"/>
+  </g>
+
+  <!-- Rug -->
+  <ellipse cx="640" cy="640" rx="300" ry="42" fill="#FFFFFF" opacity=".55"/>
+
+  <!-- Plant left -->
+  <g>
+    <path d="M150 600h92l-12 84h-68z" fill="#F3F8FB"/>
+    <path d="M196 600c-6-60-40-96-80-110 30 34 44 70 52 110z" fill="#2E7D53"/>
+    <path d="M196 600c4-80 30-130 70-150-20 44-30 96-34 150z" fill="#3E9A66"/>
+    <path d="M196 600c-20-50-60-70-96-70 34 18 56 42 72 70z" fill="#5BB37F"/>
+    <path d="M196 600c14-44 46-70 86-74-30 22-48 46-60 74z" fill="#2E7D53"/>
+  </g>
+
+  <!-- Plant right -->
+  <g>
+    <rect x="884" y="560" width="54" height="70" rx="8" fill="#F3F8FB"/>
+    <path d="M911 560c-4-40-22-66-48-76 16 24 26 50 30 76z" fill="#3E9A66"/>
+    <path d="M911 560c4-46 20-74 44-86-12 28-18 56-20 86z" fill="#2E7D53"/>
+  </g>
+
+  <!-- Side table + lamp -->
+  <rect x="300" y="500" width="80" height="10" rx="5" fill="#5B4632"/>
+  <rect x="336" y="510" width="8" height="80" fill="#5B4632"/>
+  <rect x="312" y="586" width="56" height="8" rx="4" fill="#5B4632"/>
+  <path d="M318 440h44l12 44h-68z" fill="#FFF3C4"/>
+  <rect x="337" y="484" width="6" height="16" fill="#C9A66B"/>
+</svg>
