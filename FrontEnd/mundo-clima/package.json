@@ -10,13 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/montserrat": "^5.3.0",
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.104.1",
     "axios": "^1.20.0",
     "clsx": "^2.1.1",
+    "framer-motion": "^14.3.0",
     "lucide-react": "^1.54.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-helmet-async": "^3.0.0",
     "react-hook-form": "^7.89.0",
     "react-router": "^8.4.0",
     "tailwind-merge": "^3.7.0",
