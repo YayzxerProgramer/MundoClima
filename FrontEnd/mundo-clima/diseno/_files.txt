@@ -1,0 +1,41 @@
+.thumbnail	25526
+Especificacion Fase 1.dc.html	36164
+Mundo Clima Admin.dc.html	79203
+Mundo Clima Tienda v2.dc.html	212993
+Mundo Clima Tienda v3.dc.html	213428
+Mundo Clima Tienda.dc.html	208185
+ProductCard.dc.html	11303
+TarjetaProducto.dc.html	11928
+TarjetaProductoMC.dc.html	11972
+img/marca-mundo-clima.jpg	45627
+img/mc-isotipo-blanco.png	121627
+img/mc-isotipo.png	354214
+img/mc-logo-blanco.png	224725
+img/mc-logo.png	572891
+lc-icon.js	2168
+ms-icon.js	3068
+support.js	69150
+uploads/MUNDO CLIMA LOGOTIPO-60c6a765.pdf	81322
+uploads/MUNDO CLIMA LOGOTIPO.pdf	81322
+uploads/color.xml	425
+uploads/container.xml	690
+uploads/data1.dat	27335
+uploads/dataFileList.dat	34
+uploads/docPalette.xml	963
+uploads/document.cdss	16955
+uploads/links.xml	53
+uploads/masterPage.dat	619
+uploads/metadata.xml	9129
+uploads/mimetype	45
+uploads/mimetype-a68fbef5	45
+uploads/page1.dat	293402
+uploads/page1.png	22087
+uploads/preview (1)-f6d397f7.webp	119926
+uploads/preview (1).webp	119926
+uploads/preview-b6ff5852.webp	51538
+uploads/preview.webp	51538
+uploads/root.dat	31356
+uploads/srgb color space profile.icm	3144
+uploads/textinfo.xml	595
+uploads/thumbnail.png	55826
+uploads/uswebcoatedswop.icc	557168
