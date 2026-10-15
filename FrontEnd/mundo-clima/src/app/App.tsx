@@ -3,10 +3,10 @@ import {
   createBrowserRouter,
   Navigate,
   Outlet,
-  RouterProvider,
   useLocation,
   useNavigate,
-} from "react-router-dom";
+} from "react-router";
+import { RouterProvider } from "react-router/dom";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { queryClient } from "../shared/lib/query";
@@ -141,6 +141,11 @@ const router = createBrowserRouter([
   {
     element: <Layout />,
     errorElement: <ErrorPage />,
+    hydrateFallbackElement: (
+      <div className="container-site page-section">
+        <Skeleton className="h-96" />
+      </div>
+    ),
     children: [
       {
         index: true,
@@ -313,15 +318,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <RouterProvider
-          router={router}
-          future={{ v7_startTransition: true }}
-          fallbackElement={
-            <div className="container-site page-section">
-              <Skeleton className="h-96" />
-            </div>
-          }
-        />
+        <RouterProvider router={router} />
       </HelmetProvider>
     </QueryClientProvider>
   );

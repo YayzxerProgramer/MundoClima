@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Accordion, Breadcrumbs } from "../../../shared/ui";
 import { SEO } from "../../../shared/ui/SEO";
 export default function HelpPage() {

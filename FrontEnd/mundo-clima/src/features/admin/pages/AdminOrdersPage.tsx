@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router";
 import { getAdminOrders } from "../../orders/api/orders";
 import { orderLabels } from "../../orders/types";
 import { OrderStatusBadge } from "../../orders/components/OrderStatusBadge";

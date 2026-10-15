@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { ArrowUpRight, Package } from "lucide-react";
 import { getOrders } from "../api/orders";
 import { OrderStatusBadge } from "../components/OrderStatusBadge";

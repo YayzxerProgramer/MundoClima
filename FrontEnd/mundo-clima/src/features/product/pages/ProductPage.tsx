@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import { Check, Expand, ShieldCheck, ShoppingBag } from "lucide-react";
 import { useProduct, useProducts } from "../../catalog/hooks/queries";
 import { ProductCard } from "../../catalog/components/ProductCard";

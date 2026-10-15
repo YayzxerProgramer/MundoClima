@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import { Truck } from "lucide-react";
 import { getOrder } from "../api/orders";
 import { OrderStatusBadge } from "../components/OrderStatusBadge";

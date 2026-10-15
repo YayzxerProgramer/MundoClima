@@ -1,10 +1,39 @@
+@import "tailwindcss";
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/montserrat";
 @import "./shared/layout/layout.css";
 @import "./app/pages.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Los colores se leen de las variables de :root y .dark (canales RGB). */
+@theme inline {
+  --breakpoint-xs: 480px;
+
+  --color-primary: rgb(var(--primary));
+  --color-aqua: rgb(var(--aqua));
+  --color-buy: rgb(var(--buy));
+  --color-ink: rgb(var(--ink));
+  --color-muted: rgb(var(--muted));
+  --color-surface: rgb(var(--surface));
+  --color-canvas: rgb(var(--canvas));
+  --color-line: rgb(var(--line));
+  --color-success: rgb(var(--success));
+  --color-warning: rgb(var(--warning));
+  --color-danger: rgb(var(--danger));
+
+  --font-sans: "Inter Variable", Inter, system-ui, sans-serif;
+  --font-display: "Montserrat Variable", Montserrat, system-ui, sans-serif;
+
+  --container-site: 80rem;
+
+  --radius-control: 0.625rem;
+  --radius-card: 1rem;
+
+  --shadow-card:
+    0 1px 2px rgb(11 35 54 / 0.04), 0 8px 24px rgb(11 35 54 / 0.06);
+  --shadow-float: 0 12px 40px rgb(11 35 54 / 0.18);
+}
 @layer base {
   :root {
     --primary: 10 89 138;
@@ -66,7 +95,12 @@
   textarea,
   summary,
   [tabindex] {
-    @apply outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-surface;
+    @apply outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-surface;
+  }
+  /* Tailwind 4 ya no pone cursor de mano a los botones. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
   button {
     @apply disabled:cursor-not-allowed;
@@ -336,7 +370,7 @@
     @apply mb-4 flex flex-wrap gap-1.5 text-xs text-muted;
   }
   .product-specs span {
-    @apply rounded bg-canvas px-1.5 py-1;
+    @apply rounded-sm bg-canvas px-1.5 py-1;
   }
   .product-list {
     @apply grid gap-4;

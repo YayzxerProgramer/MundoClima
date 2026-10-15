@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router";
 import { Search as SearchIcon, ArrowUpRight } from "lucide-react";
 import { useDebounce } from "../hooks/use-debounce";
 import { useProducts } from "../../features/catalog/hooks/queries";

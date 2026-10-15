@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { ShoppingBag, Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";

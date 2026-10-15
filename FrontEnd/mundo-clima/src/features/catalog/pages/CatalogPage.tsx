@@ -4,7 +4,7 @@ import {
   useNavigate,
   useParams,
   useSearchParams,
-} from "react-router-dom";
+} from "react-router";
 import { Grid2X2, List, SlidersHorizontal, X } from "lucide-react";
 import { SEO } from "../../../shared/ui/SEO";
 import {

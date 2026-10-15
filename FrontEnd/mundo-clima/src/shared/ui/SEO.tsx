@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 export function SEO({
   title,
   description = "Aires acondicionados, repuestos e insumos de refrigeración. Encuentra la solución para tu hogar, negocio o próximo proyecto en Mundo Clima.",

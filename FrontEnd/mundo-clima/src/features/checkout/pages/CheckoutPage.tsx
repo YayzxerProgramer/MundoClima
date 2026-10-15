@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -381,7 +381,7 @@ export default function CheckoutPage() {
                   <ProductImage
                     src={line.product.images[0]}
                     alt=""
-                    className="h-14 w-14 rounded bg-white object-contain"
+                    className="h-14 w-14 rounded-sm bg-white object-contain"
                   />
                   <div className="flex-1 text-xs">
                     <p className="line-clamp-2 font-medium">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Plus } from "lucide-react";
 import { useProducts } from "../../catalog/hooks/queries";
 import { useDebounce } from "../../../shared/hooks/use-debounce";
@@ -80,7 +80,7 @@ export default function AdminProductsPage() {
                         <ProductImage
                           src={product.images[0]}
                           alt=""
-                          className="h-12 w-12 rounded bg-white object-contain"
+                          className="h-12 w-12 rounded-sm bg-white object-contain"
                         />
                         <span>{product.name}</span>
                       </div>
