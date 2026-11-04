@@ -174,8 +174,85 @@ export interface Orden {
   coordinadora_url_rotulo: string | null
   coordinadora_estado_envio: string | null
   items: ItemOrden[]
+  /** Solo en GET /ordenes/admin y GET /ordenes/:id. */
+  usuario?: Pick<Usuario, 'id' | 'nombre_completo' | 'email' | 'rol' | 'telefono'> | null
   creado_en: string
   actualizado_en: string
+}
+
+export interface ListaOrdenes {
+  datos: Orden[]
+  meta: { total: number; pagina: number; limite: number; totalPaginas: number }
+}
+
+export type RangoVentas = 'hoy' | 'semana' | 'mes' | 'ano' | 'personalizado'
+
+/** GET /estadisticas/resumen. Los montos llegan como número. */
+export interface ResumenAdmin {
+  ventas_totales_cop: number
+  ordenes_totales: number
+  ordenes_aprobadas_conteo: number
+  ticket_promedio_cop: number
+  ordenes_por_estado: Partial<Record<EstadoOrden, number>>
+  inventario: {
+    total_productos: number
+    productos_activos: number
+    productos_stock_bajo_conteo: number
+    valor_total_inventario_cop: number
+  }
+  clientes: {
+    total_registrados: number
+    clientes_finales: number
+    tecnicos_profesionales: number
+    distribuidores_mayoristas: number
+  }
+}
+
+export interface VentasPeriodo {
+  rango: RangoVentas
+  serie_tiempo: { fecha: string; total_ventas: number; ordenes: number }[]
+}
+
+export interface Conversion {
+  total_visitas_registradas: number
+  ordenes_completadas: number
+  tasa_conversion_porcentaje: number
+}
+
+/** Cuerpo de POST /usuarios y PATCH /usuarios/:id. */
+export interface UsuarioBody {
+  nombre_completo: string
+  email: string
+  password?: string
+  rol: Rol
+  telefono?: string
+  documento_identidad?: string
+  nombre_empresa?: string
+  esta_activo: boolean
+}
+
+/** Cuerpo de POST /productos. */
+export interface CrearProductoBody {
+  sku: string
+  nombre: string
+  precio_base: number
+  precio_costo?: number
+  inventario_stock: number
+  alerta_stock_minimo?: number
+  unidad_medida?: string
+  descripcion?: string
+  descripcion_corta?: string
+  esta_activo?: boolean
+  es_destacado?: boolean
+  imagenes?: string[]
+  btu?: number
+  tipo_refrigerante?: string
+  voltaje?: string
+  tipo_equipo?: string
+  especificaciones?: Record<string, string>
+  categoria_id?: string
+  marca_id?: string
+  precios_nivel?: { nivel_cliente: NivelPrecio; cantidad_minima: number; precio_especial: number }[]
 }
 
 export interface CrearOrdenBody {

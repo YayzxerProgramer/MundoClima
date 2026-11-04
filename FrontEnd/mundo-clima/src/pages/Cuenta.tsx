@@ -1,13 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import { useMisPedidos, usePerfil } from '../api/cuenta'
 import { Skeleton } from '../components/ui/basicos'
 import { Icon } from '../components/ui/Icon'
 import { mensajeError } from '../lib/api'
+import { btn } from '../lib/estilos'
 import { ROL_LABEL, TAG_NIVEL } from '../lib/constantes'
 import { fmt, fmtFecha, primerNombre } from '../lib/formato'
 import { etiquetaEstado, unidadesOrden } from '../lib/orden'
-import { useAuth } from '../store/auth'
+import { useAuth, useEsAdmin } from '../store/auth'
 import { useUI } from '../store/ui'
 
 export default function Cuenta({ tab }: { tab: 'perfil' | 'pedidos' }) {
@@ -16,6 +17,7 @@ export default function Cuenta({ tab }: { tab: 'perfil' | 'pedidos' }) {
   const guardado = useAuth((s) => s.usuario)
   const perfil = usePerfil()
   const u = perfil.data ?? guardado
+  const esAdmin = useEsAdmin()
   const pedidos = useMisPedidos()
   const nombre = primerNombre(u?.nombre_completo)
   const rolTag = u?.rol === 'TECNICO' || u?.rol === 'DISTRIBUIDOR' ? TAG_NIVEL[u.rol]! : ['#EEF1F4', '#16232F']
@@ -40,8 +42,11 @@ export default function Cuenta({ tab }: { tab: 'perfil' | 'pedidos' }) {
 
   const tabs: ['perfil' | 'pedidos', string, string][] = [
     ['perfil', 'Perfil', '/cuenta'],
-    ['pedidos', `Mis pedidos${pedidos.data ? ` (${pedidos.data.length})` : ''}`, '/cuenta/pedidos'],
+    ...(esAdmin ? [] : [['pedidos', `Mis pedidos${pedidos.data ? ` (${pedidos.data.length})` : ''}`, '/cuenta/pedidos'] as ['pedidos', string, string]]),
   ]
+
+  // Las cuentas de administrador no compran: sus pedidos son los de la tienda.
+  if (esAdmin && tab === 'pedidos') return <Navigate to="/admin/pedidos" replace />
 
   return (
     <div className="mx-auto max-w-[1080px] px-[clamp(16px,4vw,32px)] pt-[clamp(24px,4vw,40px)]">
@@ -68,6 +73,22 @@ export default function Cuenta({ tab }: { tab: 'perfil' | 'pedidos' }) {
           Cerrar sesión
         </button>
       </div>
+      {esAdmin && (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border-2 border-primary bg-white px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-md bg-tint text-primary">
+              <Icon name="admin_panel_settings" size={24} />
+            </span>
+            <div>
+              <strong className="block font-display">Panel de administración</strong>
+              <span className="text-[13px] text-muted">Ventas, pedidos, productos y usuarios de la tienda.</span>
+            </div>
+          </div>
+          <Link to="/admin" className={`${btn.base} ${btn.primary} h-11 px-5 text-[13px] hover:text-white hover:no-underline`}>
+            Ir al panel
+          </Link>
+        </div>
+      )}
       <div role="tablist" aria-label="Mi cuenta" className="mt-6 flex gap-1 border-b border-line">
         {tabs.map(([k, label, to]) => (
           <Link

@@ -5,7 +5,7 @@ import { useResumenCarrito } from '../../hooks/carrito'
 import { irASeccionB2B } from '../../hooks/util'
 import { NIVEL_CORTO, ROL_LABEL, TAG_NIVEL } from '../../lib/constantes'
 import { fmt, primerNombre } from '../../lib/formato'
-import { useAuth } from '../../store/auth'
+import { useAuth, useEsAdmin } from '../../store/auth'
 import { useUI } from '../../store/ui'
 import { Icon } from '../ui/Icon'
 import { Buscador } from './Buscador'
@@ -16,6 +16,7 @@ const gutter = 'mx-auto max-w-[1340px] px-[clamp(16px,4vw,32px)]'
 export function Header() {
   const navigate = useNavigate()
   const usuario = useAuth((s) => s.usuario)
+  const esAdmin = useEsAdmin()
   const nivel = useNivel()
   const esB2B = nivel !== 'CLIENTE_FINAL'
   const tag = TAG_NIVEL[nivel] ?? TAG_NIVEL.TECNICO!
@@ -39,6 +40,9 @@ export function Header() {
           <span className="ml-auto hidden items-center gap-[18px] lg:flex">
             <Link to="/rastreo" className="text-xs text-[#E3EEF5] hover:text-[#E3EEF5] hover:underline">
               Rastrear pedido
+            </Link>
+            <Link to="/ayuda" className="text-xs text-[#E3EEF5] hover:text-[#E3EEF5] hover:underline">
+              Ayuda
             </Link>
             <Link to="/" onClick={irASeccionB2B} className="flex items-center gap-1.5 text-xs font-semibold text-sky hover:text-sky hover:underline">
               <Icon name="badge" size={16} />
@@ -73,6 +77,18 @@ export function Header() {
             <Buscador />
           </div>
           <div className="ml-auto flex items-center gap-1">
+            {esAdmin && (
+              <Link
+                to="/admin"
+                className="flex min-h-11 items-center gap-[9px] rounded-md px-1.5 py-1.5 text-primary hover:bg-line-2 hover:text-primary hover:no-underline lg:px-2.5"
+              >
+                <Icon name="admin_panel_settings" size={28} />
+                <span className="hidden flex-col leading-[1.25] lg:flex">
+                  <span className="text-[11px] text-muted">Administración</span>
+                  <span className="text-[13px] font-semibold">Panel de la tienda</span>
+                </span>
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => navigate(usuario ? '/cuenta' : '/ingresar')}
@@ -95,6 +111,7 @@ export function Header() {
                 {ROL_LABEL[nivel]}
               </span>
             )}
+            {!esAdmin && (
             <button
               type="button"
               onClick={abrirMiniCarrito}
@@ -117,6 +134,7 @@ export function Header() {
                 <span className="tabular text-[13px] font-bold text-primary">{fmt(subtotal)}</span>
               </span>
             </button>
+            )}
           </div>
           {esB2B && (
             <div className="order-11 flex flex-[1_1_100%] items-center gap-2 text-xs text-muted lg:hidden">

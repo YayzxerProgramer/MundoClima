@@ -37,6 +37,9 @@ function Footer() {
           <Link to="/cuenta/pedidos" className={linkFooter}>
             Mis pedidos
           </Link>
+          <Link to="/ayuda" className={linkFooter}>
+            Preguntas frecuentes
+          </Link>
           <span className="text-sm">Envíos con Coordinadora</span>
           <span className="text-sm">Pagos con Wompi y contraentrega</span>
         </div>

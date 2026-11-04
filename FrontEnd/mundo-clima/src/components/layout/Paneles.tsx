@@ -114,6 +114,16 @@ export function MenuMovil() {
             <Icon name="package-search" size={20} />
             Rastrear pedido
           </button>
+          <button type="button" onClick={() => ir('/ayuda')} className="flex min-h-12 items-center gap-3 px-2 text-[15px] font-semibold">
+            <Icon name="help" size={20} />
+            Ayuda para comprar
+          </button>
+          {usuario?.rol === 'ADMIN' && (
+            <button type="button" onClick={() => ir('/admin')} className="flex min-h-12 items-center gap-3 px-2 text-[15px] font-semibold text-primary">
+              <Icon name="admin_panel_settings" size={20} />
+              Panel de administración
+            </button>
+          )}
           <button type="button" onClick={() => ir(usuario ? '/cuenta' : '/ingresar')} className="flex min-h-12 items-center gap-3 px-2 text-[15px] font-semibold">
             <Icon name="circle-user-round" size={20} />
             {usuario ? 'Mi cuenta' : 'Ingresar / Crear cuenta'}

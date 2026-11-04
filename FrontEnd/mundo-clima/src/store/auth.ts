@@ -22,3 +22,6 @@ export const useAuth = create<EstadoAuth>()(
     { name: 'mc-auth' },
   ),
 )
+
+/** Las cuentas de administrador gestionan la tienda: no compran. */
+export const useEsAdmin = () => useAuth((s) => s.usuario?.rol === 'ADMIN')

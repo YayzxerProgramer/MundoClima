@@ -29,7 +29,11 @@ export function useLogin() {
     onSuccess: ({ token, usuario }) => {
       useAuth.getState().iniciarSesion(token, usuario)
       qc.removeQueries({ queryKey: ['mis-pedidos'] })
-      useUI.getState().avisar(`Hola, ${primerNombre(usuario.nombre_completo)} · precios actualizados`)
+      useUI.getState().avisar(
+        usuario.rol === 'ADMIN'
+          ? `Hola, ${primerNombre(usuario.nombre_completo)} · bienvenido al panel`
+          : `Hola, ${primerNombre(usuario.nombre_completo)} · precios actualizados`,
+      )
     },
   })
 }

@@ -8,7 +8,9 @@ import { usePagoWompi } from '../hooks/wompi'
 import { estadoHttp, mensajeError } from '../lib/api'
 import { btn } from '../lib/estilos'
 import { fmt, fmtFecha } from '../lib/formato'
+import { ROL_LABEL } from '../lib/constantes'
 import { etiquetaEstado, pasosOrden, puedePagar, textoMetodo } from '../lib/orden'
+import { useEsAdmin } from '../store/auth'
 import NoEncontrado from './NoEncontrado'
 
 const caja = 'flex flex-col gap-1.5 rounded-lg border border-line bg-white p-[18px] text-sm'
@@ -22,15 +24,18 @@ export default function Pedido() {
   const o = consulta.data
   const wompi = usePagoWompi()
   const abierto = useRef(false)
+  // El administrador consulta pedidos de los clientes: no los paga.
+  const esAdmin = useEsAdmin()
+  const pagable = !!o && !esAdmin && puedePagar(o)
 
   // Viene del checkout con ?pagar=1: se abre Wompi una sola vez.
   useEffect(() => {
     if (o && sp.get('pagar') === '1' && !abierto.current) {
       abierto.current = true
       setSp({}, { replace: true })
-      if (puedePagar(o)) wompi.pagar(o)
+      if (pagable) wompi.pagar(o)
     }
-  }, [o, sp, setSp, wompi])
+  }, [o, sp, setSp, wompi, pagable])
 
   if (consulta.isError) {
     const st = estadoHttp(consulta.error)
@@ -54,8 +59,8 @@ export default function Pedido() {
   return (
     <div className="mx-auto max-w-[1080px] px-[clamp(16px,4vw,32px)] pt-[18px]">
       <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-[13px] text-muted-2">
-        <Link to="/cuenta/pedidos" className="text-[13px] text-primary-dark">
-          Mis pedidos
+        <Link to={esAdmin ? '/admin/pedidos' : '/cuenta/pedidos'} className="text-[13px] text-primary-dark">
+          {esAdmin ? 'Pedidos de la tienda' : 'Mis pedidos'}
         </Link>
         <Icon name="chevron-right" size={14} />
         <span aria-current="page" className="tabular text-ink-2">
@@ -69,7 +74,7 @@ export default function Pedido() {
         </span>
         <span className="text-sm text-muted-2">{fmtFecha(o.creado_en)}</span>
       </div>
-      {puedePagar(o) && (
+      {pagable && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md bg-warn-bg px-4 py-3.5 text-warn-ink">
           <span className="flex items-center gap-2.5 font-semibold">
             <Icon name="triangle-alert" size={18} />
@@ -124,6 +129,20 @@ export default function Pedido() {
           </div>
         </section>
         <div className="flex flex-[2_1_300px] flex-col gap-3.5">
+          {esAdmin && o.usuario && (
+            <section className={caja}>
+              <h2 className={h2}>
+                <Icon name="account_circle" size={18} />
+                Cliente
+              </h2>
+              <strong>{o.usuario.nombre_completo}</strong>
+              <a href={`mailto:${o.usuario.email}`} className="break-all">
+                {o.usuario.email}
+              </a>
+              {o.usuario.telefono && <span className="tabular text-muted-2">Tel. {o.usuario.telefono}</span>}
+              <span className="text-muted-2">{ROL_LABEL[o.usuario.rol]}</span>
+            </section>
+          )}
           <section className={caja}>
             <h2 className={h2}>
               <Icon name="map-pin" size={18} />

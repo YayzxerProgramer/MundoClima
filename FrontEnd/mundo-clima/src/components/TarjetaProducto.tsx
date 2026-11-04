@@ -4,6 +4,7 @@ import { useAgregarAlCarrito } from '../hooks/carrito'
 import { ETIQUETA_PRECIO, iconoCategoria, MOSTRAR_FOTOS, TAG_NIVEL } from '../lib/constantes'
 import { fmt } from '../lib/formato'
 import { chipsProducto, estadoStock } from '../lib/producto'
+import { useEsAdmin } from '../store/auth'
 import { useUI } from '../store/ui'
 import type { Producto } from '../types/api'
 import { FotoProducto } from './ui/basicos'
@@ -16,6 +17,7 @@ export function TarjetaProducto({ producto: p, vista = 'grid' }: { producto: Pro
   const nivel = useNivel()
   const agregar = useAgregarAlCarrito()
   const agregado = useUI((s) => s.agregado === p.id)
+  const esAdmin = useEsAdmin()
   const tag = TAG_NIVEL[nivel] ?? TAG_NIVEL.TECNICO!
   const st = estadoStock(p)
   const b2b = p.tiene_descuento_b2b
@@ -55,7 +57,12 @@ export function TarjetaProducto({ producto: p, vista = 'grid' }: { producto: Pro
     </div>
   )
 
-  const accion = st.agotado ? (
+  const accion = esAdmin ? (
+    <Link to={url} className={`${botonAgregar} border-[1.5px] border-primary bg-white text-primary hover:bg-tint hover:no-underline`}>
+      <Icon name="visibility" size={19} />
+      VER FICHA
+    </Link>
+  ) : st.agotado ? (
     <button type="button" disabled className={`${botonAgregar} border border-line bg-line-2 text-muted`}>
       AGOTADO
     </button>

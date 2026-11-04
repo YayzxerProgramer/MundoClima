@@ -12,6 +12,7 @@ import { DEPARTAMENTOS, ETIQUETA_PRECIO, iconoCategoria, MOSTRAR_FOTOS } from '.
 import { btn } from '../lib/estilos'
 import { fmt, fmtN, normalizar } from '../lib/formato'
 import { estadoStock } from '../lib/producto'
+import { useEsAdmin } from '../store/auth'
 import { useUI } from '../store/ui'
 import type { Producto as TProducto } from '../types/api'
 import NoEncontrado from './NoEncontrado'
@@ -106,6 +107,7 @@ function FichaProducto({ slug }: { slug: string }) {
   const agregar = useAgregarAlCarrito()
   const agregado = useUI((s) => !!p && s.agregado === p.id)
   const abrirMini = useUI((s) => s.abrirMiniCarrito)
+  const esAdmin = useEsAdmin()
 
   const relacionados = useProductos({ categoria: p?.categoria?.slug, ordenarPor: 'destacados', limite: 5 }, { enabled: !!p?.categoria })
   const destacados = useProductos({ ordenarPor: 'destacados', limite: 5 }, { enabled: !!p })
@@ -294,7 +296,7 @@ function FichaProducto({ slug }: { slug: string }) {
             <div className="flex flex-col gap-1 rounded-lg border border-line bg-white p-4">
               <div className="tabular font-display text-4xl leading-[1.05] font-bold text-primary">{fmt(p.precio_aplicado)}</div>
               <span className="text-xs text-muted">Precio por {unidad}</span>
-              {!esB2B && (
+              {!esB2B && !esAdmin && (
                 <div className="mt-3 flex items-start gap-2.5 rounded-md border border-line bg-page p-3">
                   <span className="flex text-primary">
                     <Icon name="engineering" size={22} />
@@ -339,6 +341,23 @@ function FichaProducto({ slug }: { slug: string }) {
                 En stock · {p.inventario_stock} disponibles
               </div>
             )}
+            {esAdmin ? (
+              <div className="flex flex-col gap-2.5 rounded-md bg-tint p-3 text-[13px] text-ink-2">
+                <span className="flex items-start gap-2">
+                  <span className="flex text-primary">
+                    <Icon name="admin_panel_settings" size={20} />
+                  </span>
+                  Estás viendo la tienda como administrador. Las cuentas de administrador no hacen pedidos.
+                </span>
+                <span className="font-mono text-[12px] text-muted">
+                  SKU {p.sku} · alerta de stock en {p.alerta_stock_minimo}
+                </span>
+                <Link to="/admin/productos" className={`${btn.base} ${btn.outline} h-11 text-[13px] hover:no-underline`}>
+                  Ir a productos del panel
+                </Link>
+              </div>
+            ) : (
+              <>
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="text-[12.5px] text-muted">Cantidad</span>
               <div role="group" aria-label="Cantidad" className="flex items-center overflow-hidden rounded-[5px] border border-line bg-white">
@@ -395,6 +414,8 @@ function FichaProducto({ slug }: { slug: string }) {
                 <Icon name="add_shopping_cart" size={22} />
                 Agregar al carrito
               </button>
+            )}
+              </>
             )}
           </div>
           <Cotizador key={p.id} producto={p} cantidad={cant} precio={p.precio_aplicado} />
