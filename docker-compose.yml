@@ -1,0 +1,23 @@
+services:
+  # Base de Datos PostgreSQL para Mundo Clima
+  postgres:
+    image: postgres:16-alpine
+    container_name: mundo_clima_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      - '5440:5432' # 5432 y 5433 ocupados por PostgreSQL nativo de Windows
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-mundo_clima_db}' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
