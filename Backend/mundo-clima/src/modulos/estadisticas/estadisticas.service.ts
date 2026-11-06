@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThanOrEqual } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Orden } from '../ordenes/entidades/orden.entity';
+import { ItemOrden } from '../ordenes/entidades/item-orden.entity';
 import { Producto } from '../productos/entidades/producto.entity';
 import { Usuario } from '../usuarios/entidades/usuario.entity';
 import { VisitaTienda } from './entidades/visita-tienda.entity';
@@ -15,6 +16,8 @@ export class EstadisticasService {
   constructor(
     @InjectRepository(Orden)
     private readonly repositorioOrden: Repository<Orden>,
+    @InjectRepository(ItemOrden)
+    private readonly repositorioItemOrden: Repository<ItemOrden>,
     @InjectRepository(Producto)
     private readonly repositorioProducto: Repository<Producto>,
     @InjectRepository(Usuario)
@@ -39,7 +42,7 @@ export class EstadisticasService {
     const consultaVentas = await this.repositorioOrden
       .createQueryBuilder('orden')
       .select('SUM(orden.total)', 'total_ventas')
-      .select('COUNT(orden.id)', 'conteo_ordenes')
+      .addSelect('COUNT(orden.id)', 'conteo_ordenes')
       .where('orden.estado IN (:...estados)', { estados: estadosAprobados })
       .getRawOne();
 
@@ -126,7 +129,7 @@ export class EstadisticasService {
    * Obtiene la serie de tiempo de ventas por período (para gráficas en React)
    */
   async obtenerVentasPorPeriodo(dto: FiltrarEstadisticasDto) {
-    const { rango = 'mes' } = dto;
+    const { rango = 'mes', desde, hasta } = dto;
     const estadosAprobados = [
       EstadoOrden.PAGADO,
       EstadoOrden.EN_CAMINO,
@@ -152,6 +155,16 @@ export class EstadisticasService {
     } else if (rango === 'mes') {
       const hace30Dias = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000);
       consulta.andWhere('orden.creado_en >= :hace30Dias', { hace30Dias });
+    } else if (rango === 'ano') {
+      const hace365Dias = new Date(ahora.getTime() - 365 * 24 * 60 * 60 * 1000);
+      consulta.andWhere('orden.creado_en >= :hace365Dias', { hace365Dias });
+    } else if (rango === 'personalizado') {
+      if (desde) {
+        consulta.andWhere('orden.creado_en >= :desde', { desde });
+      }
+      if (hasta) {
+        consulta.andWhere('orden.creado_en <= :hasta', { hasta });
+      }
     }
 
     consulta.groupBy("TO_CHAR(orden.creado_en, 'YYYY-MM-DD')").orderBy('fecha', 'ASC');
@@ -164,6 +177,112 @@ export class EstadisticasService {
         fecha: row.fecha,
         total_ventas: Number(row.total_ventas),
         ordenes: Number(row.ordenes),
+      })),
+    };
+  }
+
+  /**
+   * Obtiene los productos más vendidos en el sistema
+   */
+  async obtenerTopProductos(limite = 5) {
+    const raw = await this.repositorioItemOrden
+      .createQueryBuilder('item')
+      .leftJoin('item.orden', 'orden')
+      .select('item.producto_id', 'producto_id')
+      .addSelect('item.nombre_producto', 'nombre_producto')
+      .addSelect('SUM(item.cantidad)', 'total_unidades')
+      .addSelect('SUM(item.cantidad * item.precio_unitario)', 'total_recaudado')
+      .where('orden.estado != :cancelado', { cancelado: EstadoOrden.CANCELADO })
+      .groupBy('item.producto_id')
+      .addGroupBy('item.nombre_producto')
+      .orderBy('total_recaudado', 'DESC')
+      .limit(limite)
+      .getRawMany();
+
+    return raw.map((r) => ({
+      producto_id: r.producto_id,
+      nombre_producto: r.nombre_producto,
+      total_unidades: Number(r.total_unidades || 0),
+      total_recaudado: Number(r.total_recaudado || 0),
+    }));
+  }
+
+  /**
+   * Obtiene los clientes con mayor volumen de compras acumuladas
+   */
+  async obtenerTopClientes(limite = 5) {
+    const raw = await this.repositorioOrden
+      .createQueryBuilder('orden')
+      .innerJoin('orden.usuario', 'usuario')
+      .select('usuario.id', 'id')
+      .addSelect('usuario.nombre_completo', 'nombre')
+      .addSelect('usuario.email', 'email')
+      .addSelect('usuario.rol', 'rol')
+      .addSelect('COUNT(orden.id)', 'total_pedidos')
+      .addSelect('SUM(orden.total)', 'total_gastado')
+      .where('orden.estado != :cancelado', { cancelado: EstadoOrden.CANCELADO })
+      .groupBy('usuario.id')
+      .addGroupBy('usuario.nombre_completo')
+      .addGroupBy('usuario.email')
+      .addGroupBy('usuario.rol')
+      .orderBy('total_gastado', 'DESC')
+      .limit(limite)
+      .getRawMany();
+
+    return raw.map((r) => ({
+      id: r.id,
+      nombre: r.nombre,
+      email: r.email,
+      rol: r.rol,
+      total_pedidos: Number(r.total_pedidos || 0),
+      total_gastado: Number(r.total_gastado || 0),
+    }));
+  }
+
+  /**
+   * Obtiene la línea de tiempo de actividad reciente para el panel de administración
+   */
+  async obtenerActividadReciente() {
+    const ultimasOrdenes = await this.repositorioOrden.find({
+      relations: { usuario: true },
+      order: { creado_en: 'DESC' },
+      take: 5,
+    });
+
+    const ultimosUsuarios = await this.repositorioUsuario.find({
+      order: { creado_en: 'DESC' },
+      take: 5,
+    });
+
+    const alertasStock = await this.repositorioProducto
+      .createQueryBuilder('producto')
+      .where('producto.inventario_stock <= producto.alerta_stock_minimo')
+      .orderBy('producto.inventario_stock', 'ASC')
+      .take(5)
+      .getMany();
+
+    return {
+      ultimas_ordenes: ultimasOrdenes.map((o) => ({
+        id: o.id,
+        referencia: o.referencia,
+        cliente: o.usuario?.nombre_completo || 'Cliente',
+        total: o.total,
+        estado: o.estado,
+        fecha: o.creado_en,
+      })),
+      ultimos_usuarios: ultimosUsuarios.map((u) => ({
+        id: u.id,
+        nombre: u.nombre_completo,
+        email: u.email,
+        rol: u.rol,
+        fecha: u.creado_en,
+      })),
+      alertas_stock: alertasStock.map((p) => ({
+        id: p.id,
+        sku: p.sku,
+        nombre: p.nombre,
+        inventario_stock: p.inventario_stock,
+        alerta_stock_minimo: p.alerta_stock_minimo,
       })),
     };
   }

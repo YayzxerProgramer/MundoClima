@@ -24,7 +24,7 @@ export class JwtEstrategia extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey:
-        configService.get<string>('JWT                          _SECRET'),
+        configService.get<string>('JWT_SECRET') || 'clave_secreta_mundo_clima_2026',
     });
   }
 

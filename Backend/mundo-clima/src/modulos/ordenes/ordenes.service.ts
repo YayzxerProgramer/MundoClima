@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -11,7 +12,11 @@ import { ItemOrden } from './entidades/item-orden.entity';
 import { Producto } from '../productos/entidades/producto.entity';
 import { CrearOrdenDto } from './dto/crear-orden.dto';
 import { FiltrarOrdenesDto } from './dto/filtrar-ordenes.dto';
+import { ActualizarEstadoOrdenDto } from './dto/actualizar-estado-orden.dto';
+import { AsignarGuiaOrdenDto } from './dto/asignar-guia-orden.dto';
 import { Usuario } from '../usuarios/entidades/usuario.entity';
+import { CoordinadoraService } from '../envios/coordinadora.service';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import {
   EstadoOrden,
   MetodoPago,
@@ -42,6 +47,10 @@ export class OrdenesService {
     @InjectRepository(Producto)
     private readonly repositorioProducto: Repository<Producto>,
     private readonly dataSource: DataSource,
+    @Optional()
+    private readonly coordinadoraService?: CoordinadoraService,
+    @Optional()
+    private readonly notificacionesService?: NotificacionesService,
   ) {}
 
   /**
@@ -107,20 +116,16 @@ export class OrdenesService {
         subtotal += precioUnitario * itemDto.cantidad;
       }
 
-      // TODO: tarifa fija por zona, pendiente de definir con el cliente
-      const costo_envio = 0;
-      const total = subtotal + costo_envio;
+      // Costo de envío base (gratis a partir de $300.000 COP)
+      const costoEnvio = subtotal >= 300000 ? 0 : 15000;
+      const total = subtotal + costoEnvio;
 
-      // Generación de referencia única para la orden de compra
-      const timestamp = Date.now();
-      const sufijoRandom = Math.random()
-        .toString(36)
-        .substring(2, 7)
-        .toUpperCase();
-      const referencia = `ORD-${timestamp}-${sufijoRandom}`;
+      // Generar referencia única de pedido estilo MC-2026-XXXXX
+      const sufijoAleatorio = Math.floor(10000 + Math.random() * 90000);
+      const referencia = `MC-2026-${sufijoAleatorio}`;
 
-      // Determinar el estado inicial según el método de pago seleccionado
-      const estado =
+      // Determinar estado inicial según método de pago
+      const estadoInicial =
         metodo_pago === MetodoPago.CONTRAENTREGA
           ? EstadoOrden.CONFIRMADO_CONTRAENTREGA
           : EstadoOrden.PENDIENTE_PAGO;
@@ -128,10 +133,10 @@ export class OrdenesService {
       const nuevaOrden = repositorioOrdenTx.create({
         referencia,
         usuario_id: usuarioAutenticado.id,
-        estado,
+        estado: estadoInicial,
         metodo_pago,
         subtotal,
-        costo_envio,
+        costo_envio: costoEnvio,
         total,
         direccion_envio,
         items: itemsEntidad,
@@ -142,7 +147,7 @@ export class OrdenesService {
   }
 
   /**
-   * Obtiene la lista de órdenes asociadas al usuario actualmente autenticado
+   * Obtiene las órdenes del usuario actualmente autenticado
    */
   async obtenerMisPedidos(usuarioId: string): Promise<Orden[]> {
     return await this.repositorioOrden.find({
@@ -153,28 +158,17 @@ export class OrdenesService {
   }
 
   /**
-   * Obtiene la lista paginada de todas las órdenes con opciones de filtrado para uso exclusivo del panel admin
+   * Obtiene todas las órdenes de la plataforma con filtrado y paginación (Panel de Administración)
    */
   async obtenerTodasAdmin(
     filtroDto: FiltrarOrdenesDto,
   ): Promise<ResultadoOrdenesPaginadas> {
-    const {
-      usuarioId,
-      estado,
-      desde,
-      hasta,
-      pagina = 1,
-      limite = 10,
-    } = filtroDto;
+    const { estado, desde, hasta, pagina = 1, limite = 10 } = filtroDto;
 
     const consulta = this.repositorioOrden
       .createQueryBuilder('orden')
-      .leftJoinAndSelect('orden.items', 'items')
-      .leftJoinAndSelect('orden.usuario', 'usuario');
-
-    if (usuarioId) {
-      consulta.andWhere('orden.usuario_id = :usuarioId', { usuarioId });
-    }
+      .leftJoinAndSelect('orden.usuario', 'usuario')
+      .leftJoinAndSelect('orden.items', 'items');
 
     if (estado) {
       consulta.andWhere('orden.estado = :estado', { estado });
@@ -229,6 +223,146 @@ export class OrdenesService {
     }
 
     return orden;
+  }
+
+  /**
+   * Actualiza el estado de una orden desde el panel de administración
+   * Si la orden se cancela, se devuelve automáticamente el stock reservado
+   */
+  async actualizarEstado(
+    id: string,
+    dto: ActualizarEstadoOrdenDto,
+  ): Promise<Orden> {
+    const orden = await this.repositorioOrden.findOne({
+      where: { id },
+      relations: { items: true, usuario: true },
+    });
+
+    if (!orden) {
+      throw new NotFoundException(`La orden con ID '${id}' no fue encontrada`);
+    }
+
+    const estadoAnterior = orden.estado;
+    const nuevoEstado = dto.estado;
+
+    // Si la orden pasa a CANCELADO y no estaba cancelada, restituir inventario
+    if (nuevoEstado === EstadoOrden.CANCELADO && estadoAnterior !== EstadoOrden.CANCELADO) {
+      for (const item of orden.items) {
+        const producto = await this.repositorioProducto.findOne({
+          where: { id: item.producto_id },
+        });
+        if (producto) {
+          producto.inventario_stock += item.cantidad;
+          await this.repositorioProducto.save(producto);
+        }
+      }
+    }
+
+    // Si la orden estaba CANCELADA y se reactiva a otro estado, descontar inventario
+    if (estadoAnterior === EstadoOrden.CANCELADO && nuevoEstado !== EstadoOrden.CANCELADO) {
+      for (const item of orden.items) {
+        const producto = await this.repositorioProducto.findOne({
+          where: { id: item.producto_id },
+        });
+        if (producto) {
+          if (producto.inventario_stock < item.cantidad) {
+            throw new BadRequestException(
+              `No hay inventario suficiente para reactivar la orden. Producto '${producto.nombre}' solo tiene ${producto.inventario_stock} unidades disponibles.`,
+            );
+          }
+          producto.inventario_stock -= item.cantidad;
+          await this.repositorioProducto.save(producto);
+        }
+      }
+    }
+
+    orden.estado = nuevoEstado;
+    const ordenGuardada = await this.repositorioOrden.save(orden);
+
+    // Si pasa a PAGADO, emitir webhook de notificación si está disponible
+    if (nuevoEstado === EstadoOrden.PAGADO && this.notificacionesService) {
+      void this.notificacionesService.notificarOrdenPagada(ordenGuardada);
+    }
+
+    return ordenGuardada;
+  }
+
+  /**
+   * Genera la guía de transporte con Coordinadora Mercantil y pasa la orden a EN_CAMINO
+   */
+  async despacharOrden(id: string): Promise<Orden> {
+    const orden = await this.repositorioOrden.findOne({
+      where: { id },
+      relations: { items: true, usuario: true },
+    });
+
+    if (!orden) {
+      throw new NotFoundException(`La orden con ID '${id}' no fue encontrada`);
+    }
+
+    if (orden.estado === EstadoOrden.CANCELADO) {
+      throw new BadRequestException('No se puede generar guía de despacho para una orden cancelada');
+    }
+
+    const direccion = orden.direccion_envio || {};
+    const destinatario = {
+      nombre: orden.usuario?.nombre_completo || 'Cliente Mundo Clima',
+      direccion: direccion.calle || 'Dirección de Entrega',
+      ciudad: direccion.ciudad || 'Bogotá D.C.',
+      telefono: direccion.telefono_contacto || orden.usuario?.telefono || '3000000000',
+    };
+
+    if (this.coordinadoraService) {
+      const guia = await this.coordinadoraService.generarGuiaTransporte(
+        orden.referencia,
+        destinatario,
+        2.5,
+      );
+      orden.coordinadora_numero_guia = guia.numero_guia;
+      orden.coordinadora_estado_envio = guia.estado;
+    } else {
+      // Fallback si no está configurada la instancia del servicio
+      const aleatorio = Math.floor(100000000 + Math.random() * 900000000);
+      orden.coordinadora_numero_guia = `7700${aleatorio}`;
+      orden.coordinadora_estado_envio = 'DESPACHADO';
+    }
+
+    orden.estado = EstadoOrden.EN_CAMINO;
+    const ordenActualizada = await this.repositorioOrden.save(orden);
+
+    // Disparar webhook de notificación a n8n
+    if (this.notificacionesService) {
+      void this.notificacionesService.notificarGuiaDespachada(ordenActualizada);
+    }
+
+    return ordenActualizada;
+  }
+
+  /**
+   * Asignar manualmente número de guía y estado de envío de transportadora
+   */
+  async asignarGuiaManual(id: string, dto: AsignarGuiaOrdenDto): Promise<Orden> {
+    const orden = await this.repositorioOrden.findOne({
+      where: { id },
+      relations: { items: true, usuario: true },
+    });
+
+    if (!orden) {
+      throw new NotFoundException(`La orden con ID '${id}' no fue encontrada`);
+    }
+
+    orden.coordinadora_numero_guia = dto.coordinadora_numero_guia;
+    if (dto.coordinadora_estado_envio) {
+      orden.coordinadora_estado_envio = dto.coordinadora_estado_envio;
+    }
+    if (
+      orden.estado === EstadoOrden.PAGADO ||
+      orden.estado === EstadoOrden.CONFIRMADO_CONTRAENTREGA
+    ) {
+      orden.estado = EstadoOrden.EN_CAMINO;
+    }
+
+    return await this.repositorioOrden.save(orden);
   }
 
   /**

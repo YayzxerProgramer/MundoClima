@@ -10,6 +10,8 @@ import * as bcrypt from 'bcryptjs';
 import { Usuario } from './entidades/usuario.entity';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto';
+import { FiltrarUsuariosDto } from './dto/filtrar-usuarios.dto';
+import { RolUsuario } from '../../comun/enums/hvac.enums';
 
 /**
  * Servicio para gestionar la lógica de negocio de los usuarios del sistema
@@ -97,16 +99,57 @@ export class UsuariosService {
       );
     }
 
+    delete (usuario as any).password;
     return usuario;
   }
 
   /**
-   * Obtiene el listado completo de usuarios (Acceso Administrativo)
+   * Obtiene el listado de usuarios con soporte para búsqueda, filtros y paginación
    */
-  async obtenerTodos(): Promise<Usuario[]> {
-    return await this.usuarioRepositorio.find({
-      order: { creado_en: 'DESC' },
-    });
+  async obtenerTodos(filtroDto?: FiltrarUsuariosDto): Promise<any> {
+    const consulta = this.usuarioRepositorio
+      .createQueryBuilder('usuario')
+      .orderBy('usuario.creado_en', 'DESC');
+
+    if (filtroDto?.q) {
+      consulta.andWhere(
+        '(usuario.nombre_completo ILIKE :q OR usuario.email ILIKE :q OR usuario.documento_identidad ILIKE :q OR usuario.telefono ILIKE :q)',
+        { q: `%${filtroDto.q}%` },
+      );
+    }
+
+    if (filtroDto?.rol) {
+      consulta.andWhere('usuario.rol = :rol', { rol: filtroDto.rol });
+    }
+
+    if (filtroDto?.esta_activo !== undefined && filtroDto?.esta_activo !== '') {
+      const activoBool =
+        filtroDto.esta_activo === true || filtroDto.esta_activo === 'true';
+      consulta.andWhere('usuario.esta_activo = :activoBool', { activoBool });
+    }
+
+    // Si se especifica paginación en el DTO, retornar objeto paginado
+    if (filtroDto?.pagina || filtroDto?.limite) {
+      const pagina = filtroDto.pagina || 1;
+      const limite = filtroDto.limite || 10;
+      const salto = (pagina - 1) * limite;
+
+      consulta.skip(salto).take(limite);
+      const [usuarios, total] = await consulta.getManyAndCount();
+
+      return {
+        datos: usuarios,
+        meta: {
+          total,
+          pagina,
+          limite,
+          totalPaginas: Math.ceil(total / limite),
+        },
+      };
+    }
+
+    // Por compatibilidad con clientes existentes que esperan un arreglo directo
+    return await consulta.getMany();
   }
 
   /**
@@ -116,15 +159,20 @@ export class UsuariosService {
     id: string,
     actualizarUsuarioDto: ActualizarUsuarioDto,
   ): Promise<Usuario> {
-    const usuario = await this.buscarPorId(id);
+    const usuario = await this.usuarioRepositorio.findOne({ where: { id } });
+    if (!usuario) {
+      throw new NotFoundException(`No se encontró ningún usuario con ID '${id}'`);
+    }
 
-    if (actualizarUsuarioDto.email) {
-      const emailNuevo = actualizarUsuarioDto.email.toLowerCase().trim();
+    const { password, email, ...restoDatos } = actualizarUsuarioDto;
+
+    if (email) {
+      const emailNuevo = email.toLowerCase().trim();
       if (emailNuevo !== usuario.email) {
         const existente = await this.usuarioRepositorio.findOne({
           where: { email: emailNuevo },
         });
-        if (existente) {
+        if (existente && existente.id !== id) {
           throw new ConflictException(
             `El correo electrónico '${emailNuevo}' ya está en uso`,
           );
@@ -133,16 +181,47 @@ export class UsuariosService {
       }
     }
 
-    if (actualizarUsuarioDto.password) {
+    // Actualizar contraseña solo si se envió una válida y con longitud >= 6
+    if (password && password.trim().length >= 6) {
       const salt = await bcrypt.genSalt(10);
-      usuario.password = await bcrypt.hash(actualizarUsuarioDto.password, salt);
+      usuario.password = await bcrypt.hash(password.trim(), salt);
     }
 
-    Object.assign(usuario, actualizarUsuarioDto);
+    Object.assign(usuario, restoDatos);
     const usuarioActualizado = await this.usuarioRepositorio.save(usuario);
 
     delete (usuarioActualizado as any).password;
     return usuarioActualizado;
+  }
+
+  /**
+   * Cambia el estado de activación de un usuario
+   */
+  async actualizarEstado(id: string, esta_activo: boolean): Promise<Usuario> {
+    const usuario = await this.usuarioRepositorio.findOne({ where: { id } });
+    if (!usuario) {
+      throw new NotFoundException(`No se encontró ningún usuario con ID '${id}'`);
+    }
+
+    usuario.esta_activo = esta_activo;
+    const usuarioGuardado = await this.usuarioRepositorio.save(usuario);
+    delete (usuarioGuardado as any).password;
+    return usuarioGuardado;
+  }
+
+  /**
+   * Actualiza el rol del usuario (Ascenso a Técnico, Distribuidor o Administrador)
+   */
+  async actualizarRol(id: string, rol: RolUsuario): Promise<Usuario> {
+    const usuario = await this.usuarioRepositorio.findOne({ where: { id } });
+    if (!usuario) {
+      throw new NotFoundException(`No se encontró ningún usuario con ID '${id}'`);
+    }
+
+    usuario.rol = rol;
+    const usuarioGuardado = await this.usuarioRepositorio.save(usuario);
+    delete (usuarioGuardado as any).password;
+    return usuarioGuardado;
   }
 
   /**

@@ -31,6 +31,10 @@ export class CrearProductoDto {
 
   @IsOptional()
   @IsString()
+  slug?: string;
+
+  @IsOptional()
+  @IsString()
   descripcion?: string;
 
   @IsOptional()
@@ -57,6 +61,11 @@ export class CrearProductoDto {
   @IsOptional()
   @IsString()
   unidad_medida?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  peso_kg?: number;
 
   @IsOptional()
   @IsBoolean()

@@ -65,6 +65,36 @@ export class EstadisticasController {
   }
 
   /**
+   * Obtiene el ranking de productos más vendidos y su facturación (Exclusivo Administradores)
+   */
+  @Get('top-productos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolUsuario.ADMIN)
+  obtenerTopProductos(@Query('limite') limite?: number) {
+    return this.estadisticasService.obtenerTopProductos(limite ? Number(limite) : 5);
+  }
+
+  /**
+   * Obtiene los clientes con mayor volumen de compras y frecuencia (Exclusivo Administradores)
+   */
+  @Get('clientes-top')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolUsuario.ADMIN)
+  obtenerTopClientes(@Query('limite') limite?: number) {
+    return this.estadisticasService.obtenerTopClientes(limite ? Number(limite) : 5);
+  }
+
+  /**
+   * Obtiene la línea de tiempo de actividad reciente en la tienda (Exclusivo Administradores)
+   */
+  @Get('actividad-reciente')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolUsuario.ADMIN)
+  obtenerActividadReciente() {
+    return this.estadisticasService.obtenerActividadReciente();
+  }
+
+  /**
    * Endpoint público para registrar visitas/impresiones desde el frontend
    */
   @Post('visita')
