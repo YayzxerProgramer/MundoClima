@@ -49,9 +49,12 @@ export class ProductosService {
   ) {}
 
   /**
-   * Búsqueda y filtrado avanzado de productos con facetas estilo Homecenter y resolución de precios B2B (Público)
+   * Búsqueda y filtrado avanzado de productos con facetas estilo Homecenter y resolución de precios B2B (Público y Admin)
    */
-  async obtenerTodos(filtroDto: FiltrarProductosDto): Promise<ResultadoProductosPaginados> {
+  async obtenerTodos(
+    filtroDto: FiltrarProductosDto,
+    esAdmin = false,
+  ): Promise<ResultadoProductosPaginados> {
     const {
       q,
       categoria,
@@ -63,6 +66,8 @@ export class ProductosService {
       voltaje,
       tipoEquipo,
       soloConStock,
+      incluirInactivos,
+      esta_activo,
       nivelCliente = NivelCliente.CLIENTE_FINAL,
       ordenarPor = OrdenarProductosPor.DESTACADOS,
       pagina = 1,
@@ -73,8 +78,17 @@ export class ProductosService {
       .createQueryBuilder('producto')
       .leftJoinAndSelect('producto.categoria', 'categoria')
       .leftJoinAndSelect('producto.marca', 'marca')
-      .leftJoinAndSelect('producto.precios_nivel', 'precios_nivel')
-      .where('producto.esta_activo = :estaActivo', { estaActivo: true });
+      .leftJoinAndSelect('producto.precios_nivel', 'precios_nivel');
+
+    // Manejo de estado activo / inactivo:
+    if (esta_activo !== undefined) {
+      consulta.andWhere('producto.esta_activo = :estaActivo', { estaActivo: esta_activo });
+    } else if (incluirInactivos === true || esAdmin) {
+      // Los administradores o quienes indiquen incluirInactivos ven tanto activos como inactivos
+    } else {
+      // Clientes y tienda pública solo ven productos activos
+      consulta.andWhere('producto.esta_activo = :estaActivo', { estaActivo: true });
+    }
 
     // 1. Filtro por búsqueda de texto general
     if (q) {
@@ -84,20 +98,41 @@ export class ProductosService {
       );
     }
 
-    // 2. Filtro por Categoría (Slug o ID)
+    const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    // 2. Filtro por Categoría (Slug o UUID)
     if (categoria) {
-      consulta.andWhere(
-        '(categoria.slug = :categoria OR categoria.id = :categoria OR categoria.categoria_padre_id = :categoria)',
-        { categoria },
-      );
+      if (esUuid.test(categoria)) {
+        consulta.andWhere(
+          '(categoria.id = :categoria OR categoria.categoria_padre_id = :categoria)',
+          { categoria },
+        );
+      } else {
+        consulta.andWhere('categoria.slug = :categoria', { categoria });
+      }
     }
 
-    // 3. Filtro por Marca (Slug o lista separada por comas)
+    // 3. Filtro por Marca (Slug o UUID o lista separada por comas)
     if (marca) {
-      const listaMarcas = marca.split(',');
-      consulta.andWhere('(marca.slug IN (:...listaMarcas) OR marca.id IN (:...listaMarcas))', {
-        listaMarcas,
-      });
+      const listaMarcas = marca.split(',').map((m) => m.trim()).filter(Boolean);
+      const uuids = listaMarcas.filter((m) => esUuid.test(m));
+      const slugs = listaMarcas.filter((m) => !esUuid.test(m));
+
+      const condicionesMarca: string[] = [];
+      const paramsMarca: Record<string, any> = {};
+
+      if (slugs.length > 0) {
+        condicionesMarca.push('marca.slug IN (:...slugsMarca)');
+        paramsMarca.slugsMarca = slugs;
+      }
+      if (uuids.length > 0) {
+        condicionesMarca.push('marca.id IN (:...uuidsMarca)');
+        paramsMarca.uuidsMarca = uuids;
+      }
+
+      if (condicionesMarca.length > 0) {
+        consulta.andWhere(`(${condicionesMarca.join(' OR ')})`, paramsMarca);
+      }
     }
 
     // 4. Filtro por Rango de Precio
@@ -530,6 +565,210 @@ export class ProductosService {
       monto_ahorro: montoAhorro,
       porcentaje_ahorro: porcentajeAhorro,
       descuentos_por_volumen: producto.precios_nivel || [],
+    };
+  }
+
+  /**
+   * Compara hasta 4 productos HVAC/R devolviendo una matriz técnica normalizada y resaltado de diferencias
+   */
+  async compararProductos(
+    identificadores: string[],
+    nivelCliente: NivelCliente = NivelCliente.CLIENTE_FINAL,
+  ): Promise<any> {
+    const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuids = identificadores.filter((id) => esUuid.test(id));
+    const slugs = identificadores.filter((id) => !esUuid.test(id));
+
+    const consulta = this.repositorioProducto
+      .createQueryBuilder('producto')
+      .leftJoinAndSelect('producto.categoria', 'categoria')
+      .leftJoinAndSelect('producto.marca', 'marca')
+      .leftJoinAndSelect('producto.precios_nivel', 'precios_nivel')
+      .where('producto.esta_activo = :estaActivo', { estaActivo: true });
+
+    const condiciones: string[] = [];
+    const params: Record<string, any> = {};
+
+    if (uuids.length > 0) {
+      condiciones.push('producto.id IN (:...uuids)');
+      params.uuids = uuids;
+    }
+    if (slugs.length > 0) {
+      condiciones.push('producto.slug IN (:...slugs)');
+      params.slugs = slugs;
+    }
+
+    if (condiciones.length === 0) {
+      return { productos: [], matriz_especificaciones: [], atributos_diferentes: [] };
+    }
+
+    consulta.andWhere(`(${condiciones.join(' OR ')})`, params);
+    const productosEncontrados = await consulta.getMany();
+
+    // Mapear con precios resueltos y estado de disponibilidad
+    const productos = productosEncontrados.map((p) => {
+      const b2b = this.calcularPreciosPorNivelB2B(p, nivelCliente);
+      const stock = Number(p.inventario_stock || 0);
+      return {
+        ...b2b,
+        disponibilidad: stock > 0 ? 'EN_STOCK' : 'BAJO_PEDIDO',
+        es_bajo_pedido: stock <= 0,
+      };
+    });
+
+    // Recolectar todas las claves de especificaciones técnicas personalizadas
+    const conjuntoClavesSpecs = new Set<string>();
+    productos.forEach((p) => {
+      if (p.especificaciones && typeof p.especificaciones === 'object') {
+        Object.keys(p.especificaciones).forEach((k) => conjuntoClavesSpecs.add(k));
+      }
+    });
+
+    interface FilaComparativa {
+      grupo: string;
+      clave: string;
+      etiqueta: string;
+      valores: Record<string, any>;
+      es_diferente: boolean;
+    }
+
+    const filas: FilaComparativa[] = [
+      {
+        grupo: 'Identificación',
+        clave: 'marca',
+        etiqueta: 'Marca',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Identificación',
+        clave: 'categoria',
+        etiqueta: 'Categoría',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Identificación',
+        clave: 'sku',
+        etiqueta: 'Referencia / SKU',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Capacidad y Clima',
+        clave: 'btu',
+        etiqueta: 'Capacidad Térmica (BTU / TR)',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Capacidad y Clima',
+        clave: 'tipo_equipo',
+        etiqueta: 'Tipo de Equipo',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Refrigeración',
+        clave: 'tipo_refrigerante',
+        etiqueta: 'Gas Refrigerante',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Sistema Eléctrico',
+        clave: 'voltaje',
+        etiqueta: 'Voltaje y Fases',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Dimensiones y Peso',
+        clave: 'peso_kg',
+        etiqueta: 'Peso',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Disponibilidad y Compra',
+        clave: 'precio_base',
+        etiqueta: 'Precio Base (COP)',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Disponibilidad y Compra',
+        clave: 'precio_aplicado',
+        etiqueta: 'Tu Precio B2B (COP)',
+        valores: {},
+        es_diferente: false,
+      },
+      {
+        grupo: 'Disponibilidad y Compra',
+        clave: 'disponibilidad',
+        etiqueta: 'Estado de Inventario',
+        valores: {},
+        es_diferente: false,
+      },
+    ];
+
+    // Agregar especificaciones dinámicas
+    Array.from(conjuntoClavesSpecs).sort().forEach((clave) => {
+      filas.push({
+        grupo: 'Especificaciones Técnicas Detalladas',
+        clave: `spec_${clave}`,
+        etiqueta: clave,
+        valores: {},
+        es_diferente: false,
+      });
+    });
+
+    const atributosDiferentes: string[] = [];
+
+    // Poblar valores y calcular si difieren entre productos
+    filas.forEach((fila) => {
+      const valoresUnicos = new Set<string>();
+
+      productos.forEach((p) => {
+        let val: any = null;
+        if (fila.clave === 'marca') val = p.marca?.nombre || 'Genérica';
+        else if (fila.clave === 'categoria') val = p.categoria?.nombre || 'General';
+        else if (fila.clave === 'sku') val = p.sku;
+        else if (fila.clave === 'btu') {
+          if (p.btu) {
+            const tr = (p.btu / 12000).toFixed(1).replace('.0', '');
+            val = `${Number(p.btu).toLocaleString('es-CO')} BTU (${tr} TR)`;
+          } else {
+            val = 'No aplica';
+          }
+        } else if (fila.clave === 'tipo_equipo') val = p.tipo_equipo || 'Estándar';
+        else if (fila.clave === 'tipo_refrigerante') val = p.tipo_refrigerante || 'No aplica';
+        else if (fila.clave === 'voltaje') val = p.voltaje || 'No aplica';
+        else if (fila.clave === 'peso_kg') val = p.peso_kg ? `${p.peso_kg} kg` : 'No especificado';
+        else if (fila.clave === 'precio_base') val = Number(p.precio_base);
+        else if (fila.clave === 'precio_aplicado') val = Number(p.precio_aplicado);
+        else if (fila.clave === 'disponibilidad') {
+          val = p.disponibilidad === 'EN_STOCK' ? 'En stock' : 'Bajo pedido (contacto asesor)';
+        } else if (fila.clave.startsWith('spec_')) {
+          const specKey = fila.clave.replace('spec_', '');
+          val = p.especificaciones?.[specKey] ?? '—';
+        }
+
+        fila.valores[p.id] = val;
+        valoresUnicos.add(String(val ?? ''));
+      });
+
+      if (valoresUnicos.size > 1 && productos.length > 1) {
+        fila.es_diferente = true;
+        atributosDiferentes.push(fila.clave);
+      }
+    });
+
+    return {
+      total_productos: productos.length,
+      productos,
+      matriz_especificaciones: filas,
+      atributos_diferentes: atributosDiferentes,
     };
   }
 }

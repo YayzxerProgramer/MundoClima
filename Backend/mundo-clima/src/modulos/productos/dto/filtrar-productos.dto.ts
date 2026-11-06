@@ -46,6 +46,7 @@ export class FiltrarProductosDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(0)
   btu?: number;
 
   @IsOptional()
@@ -66,8 +67,22 @@ export class FiltrarProductosDto {
   soloConStock?: boolean;
 
   @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  incluirInactivos?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return undefined;
+  })
+  @IsBoolean()
+  esta_activo?: boolean;
+
+  @IsOptional()
   @IsEnum(NivelCliente)
-  nivelCliente?: NivelCliente = NivelCliente.CLIENTE_FINAL;
+  nivelCliente?: NivelCliente;
 
   @IsOptional()
   @IsEnum(OrdenarProductosPor)

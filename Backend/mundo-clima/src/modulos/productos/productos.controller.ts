@@ -10,6 +10,8 @@ import {
   Headers,
   UseGuards,
   ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ProductosService,
@@ -22,6 +24,7 @@ import { CrearProductoDto } from './dto/crear-producto.dto';
 import { ActualizarProductoDto } from './dto/actualizar-producto.dto';
 import { ActualizarStockDto } from './dto/actualizar-stock.dto';
 import { ActualizarEstadoProductoDto } from './dto/actualizar-estado-producto.dto';
+import { CompararProductosDto } from './dto/comparar-productos.dto';
 import { NivelCliente, RolUsuario } from '../../comun/enums/hvac.enums';
 import { JwtOpcionalGuard } from '../../comun/guards/jwt-opcional.guard';
 import { JwtAuthGuard } from '../../comun/guards/jwt-auth.guard';
@@ -55,7 +58,8 @@ export class ProductosController {
       }
     }
 
-    return this.servicioProductos.obtenerTodos(filtroDto);
+    const esAdmin = usuarioAutenticado?.rol === RolUsuario.ADMIN;
+    return this.servicioProductos.obtenerTodos(filtroDto, esAdmin);
   }
 
   /**
@@ -86,6 +90,25 @@ export class ProductosController {
   @Get('filtros')
   async obtenerOpcionesFiltros(): Promise<any> {
     return this.servicioProductos.obtenerOpcionesFiltros();
+  }
+
+  /**
+   * Comparar hasta 4 productos HVAC/R con matriz técnica normalizada y cálculo de diferencias
+   */
+  @Post('comparar')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtOpcionalGuard)
+  async compararProductos(
+    @Body() dto: CompararProductosDto,
+    @Headers('x-nivel-cliente') encabezadoNivel?: NivelCliente,
+    @ObtenerUsuario() usuarioAutenticado?: Usuario,
+  ) {
+    const nivel =
+      usuarioAutenticado?.rol ||
+      encabezadoNivel ||
+      NivelCliente.CLIENTE_FINAL;
+
+    return this.servicioProductos.compararProductos(dto.ids, nivel);
   }
 
   /**

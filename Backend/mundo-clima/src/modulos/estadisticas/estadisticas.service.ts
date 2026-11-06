@@ -41,7 +41,7 @@ export class EstadisticasService {
     // 1. Ingresos Totales acumulados
     const consultaVentas = await this.repositorioOrden
       .createQueryBuilder('orden')
-      .select('SUM(orden.total)', 'total_ventas')
+      .select('COALESCE(SUM(orden.total), 0)', 'total_ventas')
       .addSelect('COUNT(orden.id)', 'conteo_ordenes')
       .where('orden.estado IN (:...estados)', { estados: estadosAprobados })
       .getRawOne();
@@ -149,22 +149,25 @@ export class EstadisticasService {
     if (rango === 'hoy') {
       const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
       consulta.andWhere('orden.creado_en >= :inicioHoy', { inicioHoy });
-    } else if (rango === 'semana') {
+    } else if (rango === 'semana' || rango === 'ultimos_7_dias' || rango === 'ultimos-7-dias') {
       const hace7Dias = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
       consulta.andWhere('orden.creado_en >= :hace7Dias', { hace7Dias });
-    } else if (rango === 'mes') {
+    } else if (rango === 'mes' || rango === 'ultimos_30_dias' || rango === 'ultimos-30-dias') {
       const hace30Dias = new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000);
       consulta.andWhere('orden.creado_en >= :hace30Dias', { hace30Dias });
-    } else if (rango === 'ano') {
-      const hace365Dias = new Date(ahora.getTime() - 365 * 24 * 60 * 60 * 1000);
-      consulta.andWhere('orden.creado_en >= :hace365Dias', { hace365Dias });
-    } else if (rango === 'personalizado') {
-      if (desde) {
-        consulta.andWhere('orden.creado_en >= :desde', { desde });
-      }
-      if (hasta) {
-        consulta.andWhere('orden.creado_en <= :hasta', { hasta });
-      }
+    } else if (rango === 'ano' || rango === 'este_ano' || rango === 'este-ano' || rango === 'ano_actual') {
+      // Filtrar el año calendario actual (desde el 1 de enero)
+      const inicioAno = new Date(ahora.getFullYear(), 0, 1);
+      consulta.andWhere('orden.creado_en >= :inicioAno', { inicioAno });
+    }
+
+    // Si se especifican fechas explícitas (rango personalizado o parámetros adicionales)
+    if (desde) {
+      consulta.andWhere('orden.creado_en >= :desde', { desde });
+    }
+    if (hasta) {
+      const hastaFecha = hasta.includes('T') ? hasta : `${hasta}T23:59:59.999Z`;
+      consulta.andWhere('orden.creado_en <= :hasta', { hasta: hastaFecha });
     }
 
     consulta.groupBy("TO_CHAR(orden.creado_en, 'YYYY-MM-DD')").orderBy('fecha', 'ASC');

@@ -1,16 +1,16 @@
-import { IsOptional, IsString, IsIn, IsDateString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class FiltrarEstadisticasDto {
   @IsOptional()
   @IsString()
-  @IsIn(['hoy', 'semana', 'mes', 'ano', 'personalizado'])
-  rango?: 'hoy' | 'semana' | 'mes' | 'ano' | 'personalizado' = 'mes';
+  rango?: string = 'mes';
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   desde?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   hasta?: string;
 }
+

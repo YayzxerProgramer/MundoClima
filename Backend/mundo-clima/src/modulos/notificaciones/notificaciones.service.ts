@@ -100,6 +100,38 @@ export class NotificacionesService {
   }
 
   /**
+   * Emite un webhook hacia n8n cuando un cliente solicita contacto por un producto con stock 0
+   */
+  async notificarSolicitudStock(solicitud: any, producto: Producto): Promise<boolean> {
+    const webhookUrl =
+      this.configService.get<string>('N8N_WEBHOOK_URL') ||
+      this.configService.get<string>('N8N_WEBHOOK_SOLICITUD_STOCK');
+
+    const payload = {
+      evento: 'SOLICITUD_STOCK_CERO',
+      fecha: new Date(),
+      solicitud: {
+        id: solicitud.id,
+        nombre_completo: solicitud.nombre_completo,
+        email: solicitud.email,
+        telefono: solicitud.telefono,
+        ciudad: solicitud.ciudad,
+        cantidad: solicitud.cantidad,
+        comentarios: solicitud.comentarios,
+        estado: solicitud.estado,
+      },
+      producto: {
+        id: producto.id,
+        sku: producto.sku,
+        nombre: producto.nombre,
+        precio_base: producto.precio_base,
+      },
+    };
+
+    return await this.enviarWebhook('SOLICITUD_STOCK_CERO', webhookUrl, payload);
+  }
+
+  /**
    * Método auxiliar para ejecutar peticiones HTTP POST asíncronas hacia n8n
    */
   private async enviarWebhook(

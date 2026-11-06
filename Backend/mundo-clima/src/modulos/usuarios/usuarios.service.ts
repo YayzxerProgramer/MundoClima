@@ -46,6 +46,8 @@ export class UsuariosService {
       const passwordHash = await bcrypt.hash(password, salt);
 
       const nuevoUsuario = this.usuarioRepositorio.create({
+        rol: restoDatos.rol ?? RolUsuario.CLIENTE_FINAL,
+        esta_activo: restoDatos.esta_activo ?? true,
         ...restoDatos,
         email: email.toLowerCase().trim(),
         password: passwordHash,

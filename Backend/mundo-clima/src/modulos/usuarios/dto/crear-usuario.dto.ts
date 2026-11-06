@@ -24,7 +24,7 @@ export class CrearUsuarioDto {
 
   @IsOptional()
   @IsEnum(RolUsuario, { message: 'El rol de usuario proporcionado no es válido' })
-  rol?: RolUsuario = RolUsuario.CLIENTE_FINAL;
+  rol?: RolUsuario;
 
   @IsOptional()
   @IsString()
@@ -40,5 +40,5 @@ export class CrearUsuarioDto {
 
   @IsOptional()
   @IsBoolean()
-  esta_activo?: boolean = true;
+  esta_activo?: boolean;
 }

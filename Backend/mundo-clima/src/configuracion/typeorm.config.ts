@@ -7,6 +7,7 @@ import { Usuario } from '../modulos/usuarios/entidades/usuario.entity';
 import { Orden } from '../modulos/ordenes/entidades/orden.entity';
 import { ItemOrden } from '../modulos/ordenes/entidades/item-orden.entity';
 import { VisitaTienda } from '../modulos/estadisticas/entidades/visita-tienda.entity';
+import { SolicitudStock } from '../modulos/solicitudes-stock/entidades/solicitud-stock.entity';
 
 /**
  * Configuración exclusiva para base de datos PostgreSQL en Mundo Clima.
@@ -28,6 +29,7 @@ export const obtenerConfiguracionTypeOrm = (): TypeOrmModuleOptions => {
       Orden,
       ItemOrden,
       VisitaTienda,
+      SolicitudStock,
     ],
     synchronize: true,
     logging: process.env.NODE_ENV !== 'production', 

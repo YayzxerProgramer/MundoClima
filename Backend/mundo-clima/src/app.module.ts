@@ -17,6 +17,7 @@ import { EnviosModule } from './modulos/envios/envios.module';
 import { PagosModule } from './modulos/pagos/pagos.module';
 import { NotificacionesModule } from './modulos/notificaciones/notificaciones.module';
 import { EstadisticasModule } from './modulos/estadisticas/estadisticas.module';
+import { SolicitudesStockModule } from './modulos/solicitudes-stock/solicitudes-stock.module';
 
 /**
  * Módulo principal de la aplicación NestJS para Mundo Clima
@@ -46,6 +47,7 @@ import { EstadisticasModule } from './modulos/estadisticas/estadisticas.module';
     PagosModule,
     NotificacionesModule,
     EstadisticasModule,
+    SolicitudesStockModule,
   ],
   controllers: [AppController],
   providers: [
